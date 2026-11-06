@@ -224,7 +224,10 @@ details>summary{cursor:pointer;color:var(--muted);font-weight:600}
 <script>
 (function(){
 "use strict";
-const VERSION='1.6.0';
+const VERSION='1.7.0';
+const errLog=[];const trail=[];
+window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
+window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
 
 /* ============ small helpers ============ */
 const $=s=>document.querySelector(s);
@@ -375,6 +378,7 @@ async function refresh(showToast){
     let r;try{r=await api({action:'load'},60000);}finally{loading=false;}
     D=normalize(r.data);sentDuringLoad.forEach(applyOp);outbox.forEach(applyOp);sentDuringLoad=[];saveCache();
     sync.syncInfo=r.data.syncInfo||null;
+    setTimeout(sendPendingTickets,1500);
     sync.loaded=true;sync.last=Date.now();sync.err='';
     if(showToast)toast('Up to date');
   }catch(e){
@@ -567,9 +571,9 @@ function invoiceText(j){
   L.push(`Total: ${money(t.total)}`);if(paid)L.push(`Paid: ${money(paid)}`);L.push(`Balance due: ${money(jobBal(j))}`,'',`Pay by: ${S().payment}`,`Thank you! – ${S().signName}`);
   return L.join('\n');
 }
-let msg=null,fin=null,qk=null,rs=null;
-function openMsg(o){fin=null;qk=null;rs=null;msg=Object.assign({kinds:[]},o);renderMsg();}
-function closeModal(){if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
+let msg=null,fin=null,qk=null,rs=null,tk=null;
+function openMsg(o){fin=null;qk=null;rs=null;tk=null;msg=Object.assign({kinds:[]},o);renderMsg();}
+function closeModal(){tk=null;if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
 function finTotals(){const j=getJob(fin.jobId);if(!j)return {labor:0,mat:0,total:0};return totals(Object.assign({},j,{hoursWorked:fin.hw,materials:fin.mat,matMarkup:fin.mup,flatPrice:fin.flat}));}
 function renderResched(){
   const m=$('#modal');const j=rs&&getJob(rs.jobId);if(!j){closeModal();return;}const c=getCust(j.customerId)||{};
@@ -588,6 +592,29 @@ function renderResched(){
     <button class="btn ghost" data-act="unschedule" data-id="${j.id}">Not sure yet: take it off the schedule</button>
   </div>`;
   m.hidden=false;
+}
+function renderTicket(){
+  const m=$('#modal');if(!tk){closeModal();return;}
+  m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tk-h">
+    <div class="sec-top"><h2 class="sec" id="tk-h">Report a problem</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
+    <p class="m0">What went wrong, or what would make the app easier? Say it in your own words.</p>
+    <textarea id="tk-text" rows="5" placeholder="Example: I tapped Send invoice and nothing happened." aria-label="What went wrong">${esc(tk.text)}</textarea>
+    <p class="muted small m0" style="margin-top:-6px">🎤 You can tap the microphone on the keyboard and talk.</p>
+    <div class="row">${tk.photo?`<span class="small good">✓ Screenshot added</span><button class="btn sm ghost" data-act="tkNoPhoto">Remove</button>`:`<label class="btn sm" for="tk-photo">🖼 Add a screenshot (optional)</label><input id="tk-photo" type="file" accept="image/*" hidden>`}</div>
+    <p class="muted small m0">The app adds which screen you were on and its version, so it’s easier to fix.</p>
+    <button class="btn p go" data-act="tkSend" style="min-height:52px" ${tk.sending?'disabled':''}>${tk.sending?'Sending…':'Send'}</button>
+  </div>`;
+  m.hidden=false;
+}
+function ticketPayload(){
+  return {text:tk.text.trim(),screen:(tk.from||'')+(trail.length?' (before that: '+trail.slice(-4,-1).join(' → ')+')':''),version:VERSION,
+    device:navigator.userAgent.replace(/\s*\(KHTML, like Gecko\)/,'').slice(0,160),
+    details:['Changes waiting to save: '+outbox.length,sync.err?'Last save problem: '+sync.err:'',errLog.length?'Recent errors: '+errLog.join(' | '):'No errors recorded'].filter(Boolean).join('\n')};
+}
+async function sendPendingTickets(){
+  const P=lsGet('mhr-tickets',[]);if(!P.length||!conn)return;const left=[];
+  for(const t of P){try{await api(Object.assign({action:'ticket'},t),90000);}catch(e){left.push(t);}}
+  lsSet('mhr-tickets',left);if(P.length>left.length)toast('Your problem report was sent');
 }
 function qkWeek(){
   const out=[];let d=new Date();let n=0;
@@ -675,7 +702,8 @@ function renderFinish(){
       ${mk?`<div class="f"><label class="lab" for="fin-mup">Markup %</label><input id="fin-mup" data-fin="mup" type="number" min="0" step="1" inputmode="decimal" value="${esc(fin.mup)}"></div>`:''}
     </div>
     ${flat?'':`<p class="muted small m0">${money0(num(j.serviceFee))} for the first ${num(j.includedHours)} hr, then ${money0(num(j.hourlyRate))}/hr.</p>`}
-    <div class="row"><label class="btn wide" for="fin-photo">📷 ${after?`After photo added (${after}) · add more`:'Take the after photo'}</label><input id="fin-photo" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row" style="flex-wrap:nowrap"><label class="btn wide" for="fin-photo">📷 ${after?`After photo added (${after}) · take another`:'Take the after photo'}</label><input id="fin-photo" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}">
+      <label class="btn" for="fin-upload">🖼 Upload</label><input id="fin-upload" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
     <div class="fin-total"><span>Total for the customer</span><b id="fin-total">${money(t.total)}</b></div>
     <button class="btn p go" data-act="finishSave" data-k="invoice" style="min-height:52px">Done · send invoice</button>
     <div class="row"><select id="fin-method" aria-label="How they paid" style="max-width:130px">${METHODS.map(x=>`<option>${x}</option>`).join('')}</select><button class="btn g wide" data-act="finishSave" data-k="paid">Done · paid now</button></div>
@@ -918,7 +946,7 @@ function render(){
   Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id]){el.value=keep[id];if(el.dataset.chg)el.dataset.dirty='1';}});
   if(act){const el=document.getElementById(act);if(el){el.focus({preventScroll:true});if(sel&&sel[0]!=null){try{el.setSelectionRange(sel[0],sel[1]);}catch(e){}}}}
 }
-window.addEventListener('hashchange',()=>{if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);});
+window.addEventListener('hashchange',()=>{trail.push(location.hash||'#today');if(trail.length>6)trail.shift();if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);});
 
 /* ---------- setup ---------- */
 function viewSetup(){
@@ -993,7 +1021,7 @@ function viewToday(){
     ${doneToday.length?`<details ${ui.doneOpen?'open':''} data-tog="doneOpen"><summary>Done today (${doneToday.length})</summary><div class="list">${doneToday.map(todoRow).join('')}</div></details>`:''}
   </section>
   ${tomorrow.length?`<section class="card"><div class="sec-top"><h2 class="sec">${tmName}</h2><span class="small muted">Send reminders</span></div><div class="list">${tomorrow.map(j=>{const c=getCust(j.customerId)||{};const sent=j.remindedFor===j.date;return `<div class="item"><a class="l" href="#job/${j.id}" style="color:inherit;text-decoration:none"><b>${j.time?fmtTime(j.time)+' · ':''}${esc(c.name||'')}</b><span>${esc(j.title||'')}</span></a><span class="r"><button class="btn sm ${sent?'':'p'}" data-act="msgJob" data-id="${j.id}" data-k="remind">${sent?'Sent ✓':'Remind'}</button></span></div>`;}).join('')}</div></section>`:''}
-`;
+  <div style="text-align:center"><button class="btn ghost sm" data-act="ticketOpen">Something not working? Report it</button></div>`;
 }
 
 /* ---------- sukkah season ---------- */
@@ -1209,8 +1237,10 @@ function viewJob(id){
     <div class="row" style="flex-wrap:nowrap"><input id="jt-new" placeholder="Add a to-do for this job" aria-label="New to-do"><input id="jt-due" type="date" style="max-width:150px" aria-label="Due date"><button class="btn p" data-act="jobTodoAdd" data-id="${j.id}" aria-label="Add">+</button></div>
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">Photos</h2><span class="small muted">${ph.length}</span></div>
-    <div class="row"><label class="btn wide" for="ph-before">📷 Before</label><input id="ph-before" type="file" accept="image/*" multiple hidden data-photo="before" data-id="${j.id}">
-      <label class="btn wide" for="ph-after">📷 After</label><input id="ph-after" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row"><label class="btn wide" for="ph-before">📷 Before</label><input id="ph-before" type="file" accept="image/*" capture="environment" hidden data-photo="before" data-id="${j.id}">
+      <label class="btn wide" for="ph-after">📷 After</label><input id="ph-after" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row small muted" style="gap:6px">Took it already? <label class="btn sm" for="up-before">🖼 Upload before</label><input id="up-before" type="file" accept="image/*" multiple hidden data-photo="before" data-id="${j.id}">
+      <label class="btn sm" for="up-after">🖼 Upload after</label><input id="up-after" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
     ${ph.length?`<div class="thumbs">${ph.map(p=>thumb(p,true)).join('')}</div>`:'<p class="empty small">Snap a before photo when you arrive and an after photo when you’re done.</p>'}
     ${ph.length?`<div class="row">${hasA&&hasB?`<button class="btn sm p" data-act="shareBA" data-id="${j.id}">Share before &amp; after</button>`:''}<button class="btn sm" data-act="sharePhotos" data-id="${j.id}">Send photos</button></div>`:''}
   </section>
@@ -1252,11 +1282,11 @@ function custRows(){
   return `${rail?`<nav class="az-rail" aria-label="Jump to letter">${letters.map(x=>`<span data-az="${x}" role="button" tabindex="0" aria-label="Jump to ${x}">${x}</span>`).join('')}</nav>`:''}<div class="list">${(az?l:l.slice(0,200)).map(({c,s})=>{let h='';if(az){const L=letterOf(c);if(L!==lastL){lastL=L;h=`<div class="letter" id="L-${L}">${L}</div>`;}}return h+`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${esc([c.phone,s.last?'last job '+fmtDateY(s.last):''].filter(Boolean).join(' · '))}</span></span><span class="r"><b>${money0(s.paid)}</b><span class="small muted">${s.doneCount} job${s.doneCount===1?'':'s'}</span>${s.owes?`<span class="small bad">owes ${money0(s.owes)}</span>`:''}</span></a>`;}).join('')}</div>`;
 }
 function viewCustomers(){
-  return `<div class="row" style="flex-wrap:nowrap"><input type="search" id="cust-search" data-inp="custSearch" placeholder="Search name, phone, address" value="${esc(ui.custSearch)}" aria-label="Search customers">
+  return `<button class="btn p" data-act="custNew">+ New customer</button>
+  <div class="row" style="flex-wrap:nowrap"><input type="search" id="cust-search" data-inp="custSearch" placeholder="Search name, phone, address" value="${esc(ui.custSearch)}" aria-label="Search customers">
     <select id="cust-sort" data-chg="custSort" style="max-width:150px" aria-label="Sort">${[['az','A–Z (last name)'],['recent','Recent'],['paid','Paid most'],['jobs','Most jobs'],['owes','Owes money']].map(([k,l])=>`<option value="${k}" ${ui.custSort===k?'selected':''}>${l}</option>`).join('')}</select></div>
   <p class="muted small m0">${D.customers.length} customers · ${money0(D.payments.reduce((s,p)=>s+num(p.amount),0))} collected in total</p>
-  <section class="card" id="cust-list">${custRows()}</section>
-  <div><button class="btn" data-act="custNew">+ New customer</button></div>`;
+  <section class="card" id="cust-list">${custRows()}</section>`;
 }
 function viewCustomer(id){
   const c=getCust(id);if(!c)return '<p class="empty">This customer was removed.</p><a class="btn" href="#customers">Back</a>';
@@ -1370,6 +1400,10 @@ function viewSettings(){
   <section class="card"><h2 class="sec">Export</h2>
     <p class="small m0">Download an Excel file with real names and totals: Jobs, Customers, Payments, and a By month summary. Good for taxes or a bookkeeper.</p>
     <div class="row" style="flex-wrap:nowrap"><select id="ex-year" aria-label="Which year" style="max-width:150px"><option value="">All years</option>${[...new Set(D.jobs.map(j=>String(j.date||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort().reverse().map(y=>`<option value="${y}">${y}</option>`).join('')}</select><button class="btn p wide" data-act="exportXlsx">Download Excel</button></div>
+  </section>
+  <section class="card"><h2 class="sec">Something not working?</h2>
+    <p class="small m0">Tell us what happened, or what would make the app easier. It goes straight to the person who looks after the app.</p>
+    <button class="btn p" data-act="ticketOpen">Report a problem</button>
   </section>
   <section class="card"><h2 class="sec">Connection</h2>
     <p class="small m0">Connected to your Google Sheet. ${outbox.length?`<b>${outbox.length} change${outbox.length===1?'':'s'} waiting to save.</b>`:'Everything is saved.'}</p>
@@ -1529,6 +1563,15 @@ const A={
     closeModal();toast(`Moved to ${fmtDate(nd)}${nt?' at '+fmtTime(nt):''}`,()=>put('Jobs',Object.assign({},getJob(j.id),was)));
     if(textIt)setTimeout(()=>jobMsg(getJob(j.id),'resched'),250);
   },
+  ticketOpen:()=>{msg=null;fin=null;qk=null;rs=null;tk={text:'',photo:'',from:(trail[trail.length-1]||location.hash||'#today')};renderTicket();setTimeout(()=>{const t=$('#tk-text');if(t)t.focus();},60);},
+  tkNoPhoto:()=>{if(tk){tk.photo='';renderTicket();}},
+  tkSend:async()=>{
+    if(!tk||tk.sending)return;if(!tk.text.trim()){toast('Write or say what went wrong first');const t=$('#tk-text');if(t)t.focus();return;}
+    const t=Object.assign(ticketPayload(),tk.photo?{photo:tk.photo.split(',')[1]}:{});
+    tk.sending=true;renderTicket();
+    try{await api(Object.assign({action:'ticket'},t),90000);closeModal();toast('Sent. Thank you!');}
+    catch(e){const P=lsGet('mhr-tickets',[]);P.push(t);lsSet('mhr-tickets',P);closeModal();toast(e.code==='offline'?'No signal. It will send when you’re back online.':'Saved. It will send in a moment.');}
+  },
   qkDay:el=>{if(!qk)return;qk.over.date=el.dataset.d;qkRefresh();},
   quickOk:el=>{const j=getJob(el.dataset.id);if(j)put('Jobs',Object.assign({},j,{flag:''}));},
   qkSave:()=>{
@@ -1567,6 +1610,7 @@ document.addEventListener('input',e=>{
   const el=e.target;const k=el.dataset.inp;
   if(el.id==='msg-text'&&msg){msg.text=el.value;updMsgLinks();return;}
   if(el.dataset.rs&&rs){rs[el.dataset.rs]=el.value;return;}
+  if(el.id==='tk-text'&&tk){tk.text=el.value;return;}
   if(el.id==='qk-text'&&qk){qk.text=el.value;qkRefresh();return;}
   if(el.dataset.qkf&&qk&&el.tagName!=='SELECT'){qk.over[el.dataset.qkf]=el.value;if(el.dataset.qkf==='date'){document.querySelectorAll('#qk-week button').forEach(b=>b.classList.toggle('sel',b.dataset.d===el.value));}return;}
   if(el.dataset.fin&&fin){fin[el.dataset.fin]=el.value;const tt=$('#fin-total');if(tt)tt.textContent=money(finTotals().total);return;}
@@ -1581,6 +1625,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const el=e.target;
+  if(el.id==='tk-photo'&&tk){const f=el.files&&el.files[0];el.value='';if(f)shrink(f).then(d=>{if(tk){tk.photo=d;renderTicket();}}).catch(()=>toast('That picture couldn’t be read'));return;}
   if(el.dataset.photo){const j=getJob(el.dataset.id);const files=[...el.files];el.value='';if(j&&files.length)addPhotos(files,el.dataset.photo,j);return;}
   if(el.dataset.inp==='draft'&&el.tagName==='SELECT'&&draft){draft[el.dataset.k]=el.value;render();return;}
   if(el.dataset.qkf&&qk){qk.over[el.dataset.qkf]=el.value;if(el.dataset.qkf==='cust'||el.dataset.qkf==='date'){const pv=$('#qk-prev');if(pv)pv.innerHTML=qkPreview();}return;}
@@ -1603,7 +1648,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='td-new'){e.preventDefault();A.todoAdd();}
   if(e.key==='Enter'&&e.target.id==='jt-new'){e.preventDefault();A.jobTodoAdd({dataset:{id:route().id}});}
   if(e.key==='Enter'&&(e.target.id==='su-pass'||e.target.id==='su-url')){e.preventDefault();A.connect();}
-  if(e.key==='Escape'&&(msg||fin||qk||rs))closeModal();
+  if(e.key==='Escape'&&(msg||fin||qk||rs||tk))closeModal();
 });
 document.addEventListener('focusout',e=>{const el=e.target;if(el&&el.dataset&&el.dataset.dirty&&el.dataset.chg){delete el.dataset.dirty;el.dispatchEvent(new Event('change',{bubbles:true}));}},true);
 document.addEventListener('change',e=>{if(e.target&&e.target.dataset)delete e.target.dataset.dirty;},true);
