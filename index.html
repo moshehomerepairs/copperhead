@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Copperhead Inc</title>
-<meta name="theme-color" content="#245F8F">
+<meta name="theme-color" content="#EFEBEC">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -14,23 +14,24 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <style>
 /* Layout: phone-first app shell — sticky top bar, one scrolling page, bottom tab bar, floating "+ Job" button */
 :root{
-  --bg:#F2F3EE; --surface:#FFFFFF; --sunk:#E7E9E2; --line:#D2D6CC;
-  --ink:#1D2220; --muted:#596560; --accent:#245F8F; --accent-ink:#FFFFFF; --accent-soft:#DCE7F2;
-  --good:#2B6A4C; --good-soft:#D9EADF; --warn:#9A620E; --warn-soft:#F6E9C8; --danger:#AE3F2B; --danger-soft:#F5DDD7;
-  --orange:#B4530F; --orange-soft:#F8E1CF; --teal:#13707A; --teal-soft:#D3ECEE;
-  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* Moshe Home Repairs brand: linen, stone, olive, charcoal */
+  --bg:#EFEBEC; --surface:#FFFFFF; --sunk:#E4E1E0; --line:#DAD5D3;
+  --ink:#3D3B3A; --muted:#625D57; --accent:#675F4C; --accent-ink:#FFFFFF; --accent-soft:#E7E2D7;
+  --good:#3D6A49; --good-soft:#DEE9DE; --warn:#875A0E; --warn-soft:#F2E7CE; --danger:#9C3A2B; --danger-soft:#F3DFDA;
+  --orange:#92461A; --orange-soft:#F2E2D5; --teal:#2D6265; --teal-soft:#DCE8E7;
+  --display:"Playfair Display",Georgia,"Times New Roman",serif;
+  --body:"Montserrat","Helvetica Neue",Arial,sans-serif;
   --r:12px; --nav:64px;
   color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root{
-  --bg:#121514; --surface:#1A1E1D; --sunk:#242927; --line:#323936;
-  --ink:#E4E9E6; --muted:#9AA5A0; --accent:#86B6E3; --accent-ink:#0C1724; --accent-soft:#1E2F42;
+@media (prefers-color-scheme: dark){input,select,textarea{border-color:var(--line)!important}:root{
+  --bg:#1C1A19; --surface:#262321; --sunk:#312D2A; --line:#3E3A36;
+  --ink:#EFEBEC; --muted:#B3ACA4; --accent:#C9BFA4; --accent-ink:#1C1A19; --accent-soft:#3A3529;
   --good:#74C49A; --good-soft:#1F3B2C; --warn:#E2AA55; --warn-soft:#3A2E18; --danger:#E9856F; --danger-soft:#3E231D;
   --orange:#F0A060; --orange-soft:#3D2716; --teal:#6CC6CF; --teal-soft:#16343A;
   color-scheme:dark;
@@ -150,6 +151,12 @@ table.t th:first-child,table.t td:first-child{text-align:left}
 @media (min-width:640px){#modal{align-items:center}.sheet{border-radius:18px}}
 #toast{position:fixed;z-index:50;left:50%;transform:translateX(-50%);bottom:calc(var(--nav) + 78px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px)}
 #toast[hidden]{display:none}
+#savebar{position:fixed;z-index:22;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:2px solid var(--accent);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));display:flex;gap:10px;align-items:center;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+#savebar[hidden]{display:none}
+#savebar b{flex:1;font-size:.95rem}
+#savebar .btn{min-height:46px}
+body.editing .fab{display:none}
+body.editing main{padding-bottom:84px}
 #toast button{appearance:none;border:0;background:none;color:var(--surface);font-weight:700;text-decoration:underline;cursor:pointer;padding:4px}
 .setup{max-width:460px;margin:8vh auto 0}
 .brand{font-family:var(--display);font-weight:700;font-size:2.2rem;text-transform:uppercase;line-height:1;margin:0}
@@ -210,21 +217,88 @@ details>summary{cursor:pointer;color:var(--muted);font-weight:600}
 .fin-total b{font-family:var(--display);font-size:1.8rem}
 .err{color:var(--danger);margin:0}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
+/* ---- 1.9: brand look ---- */
+:root{--r:4px}
+body{font-size:15.5px}
+.top{border-bottom:1.5px solid var(--accent)}
+.top h1{font-family:var(--display);text-transform:none;letter-spacing:0;font-size:1.5rem}
+.top .tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.top .tt h1{flex:none}
+.top .tt span{font-size:.86rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{width:32px;height:29px;flex-shrink:0}
+a{color:var(--accent)}
+h2.sec,h3.sec{font-family:var(--display);text-transform:none;letter-spacing:0;font-size:1.22rem}
+h2.sec svg{width:20px;height:20px;vertical-align:-3px;margin-right:4px}
+label.lab,legend,.qk-row > span{text-transform:none;letter-spacing:0;font-size:.84rem}
+.pill{text-transform:none;letter-spacing:0;font-size:.76rem;font-weight:600;border-radius:3px;padding:2px 7px}
+.thumb .tag{text-transform:none}
+.btn,.chip,.seg,.seg button,.x,.match,.qk-prev,.qk-count,.cust-box,.tile,.note,input,select,textarea,.wk button,.month .day,.thumb,.back,.gear{border-radius:3px}
+input,select,textarea{border-color:#C9C4C1}
+.card,.next{border-radius:4px}
+.next{border-width:1.5px}
+.btn.g{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tile b,.fin-total b{font-family:var(--body);font-weight:700}
+.next .who{font-family:var(--display)}
+.next .when{text-transform:none;letter-spacing:0;font-weight:700}
+.sheet{border-radius:10px 10px 0 0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+.brand{text-transform:none;font-size:2rem}
+.mic svg,.btn svg{width:20px;height:20px}
+/* Quick add + New job: a strip above the tabs (never covers the page) */
+.acts{position:fixed;z-index:21;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
+.acts[hidden]{display:none}
+.acts-in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts .btn{min-height:48px}
+main{padding-bottom:calc(var(--nav) + 28px + env(safe-area-inset-bottom,0px))}
+body.has-acts main{padding-bottom:calc(var(--nav) + 96px + env(safe-area-inset-bottom,0px))}
+body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,0px))}
+.nav .side-brand,.nav .side-acts{display:none}
+.item.cur{background:var(--accent-soft);margin:0 -14px;padding-left:14px;padding-right:14px}
+.pick{color:var(--muted);text-align:center;padding:40px 10px}
+/* ---- 1.9: computer layout (wide screens) ---- */
+@media (min-width:1000px){
+  body{padding-left:236px}
+  .nav{top:0;bottom:0;right:auto;width:236px;border-top:0;border-right:1px solid var(--line);padding:0}
+  .nav-in{display:flex;flex-direction:column;height:100%;max-width:none;padding:18px 12px;gap:2px}
+  .nav a{flex-direction:row;justify-content:flex-start;gap:12px;height:46px;padding:0 12px;font-size:.95rem;border-radius:3px;color:var(--ink)}
+  .nav a svg{width:21px;height:21px}
+  .nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+  .nav .dot{position:static;margin-left:auto;background:transparent!important;color:inherit;font-size:.8rem}
+  .nav .side-brand{display:flex;flex-direction:row;justify-content:flex-start;height:auto;font-size:1rem;align-items:center;gap:10px;padding:2px 8px 16px;margin-bottom:10px;border-bottom:1.5px solid var(--accent);text-decoration:none}
+  .side-brand img{width:40px;height:36px}
+  .side-brand b{display:block;font:700 1.3rem/1 var(--display);letter-spacing:.04em;color:var(--accent)}
+  .side-brand span{display:block;font:700 .58rem var(--body);letter-spacing:.3em;color:var(--ink);margin-top:4px}
+  .top .logo{display:none}
+  .nav .side-acts{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+  .nav .side-acts .btn{justify-content:center;height:46px;color:var(--ink)}
+  .nav .side-acts .btn.p{color:var(--accent-ink)}
+  .acts{display:none!important}
+  body.has-acts main,main{padding-bottom:48px}
+  .top-in,main{max-width:1200px}
+  #toast,body.has-acts #toast{bottom:28px}
+  #savebar{left:236px;bottom:0}
+  .split{display:grid;grid-template-columns:minmax(300px,410px) minmax(0,1fr);gap:22px;align-items:start}
+  .split>.pane{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .split>.pane>*{flex-shrink:0}
+  .split>.pane.lp{position:sticky;top:78px;max-height:calc(100vh - 92px);overflow-y:auto;padding-right:4px}
+  .az-rail{display:none}
+  #cust-list.has-rail{margin-right:0}
+}
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in" id="topbar"></div></header>
 <main id="main"></main>
 <nav class="nav" id="nav" hidden></nav>
-<button class="fab qk" id="fabq" data-act="quickOpen" hidden aria-label="Quick add">⚡ Quick</button>
-<a class="fab" id="fab" href="#new" hidden>+ Job</a>
+<div class="acts" id="acts" hidden><div class="acts-in"><button class="btn p" id="fabq" data-act="quickOpen"></button><a class="btn" id="fab" href="#new">+ New job</a></div></div>
 <div id="modal" hidden></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
+<div id="savebar" hidden></div>
 
 <script>
 (function(){
 "use strict";
-const VERSION='1.8.1';
+const VERSION='1.9.0';
 const errLog=[];const trail=[];
 window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
 window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
@@ -273,7 +347,16 @@ const ICON={
   call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
   text:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
   wa:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.6-4.7A8.5 8.5 0 1 1 7.8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a5 5 0 0 1-2.8-2.8l.8-1-1-2z"/></svg>',
-  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 3L5 14h6l-1 7 8-11h-6l1-7z"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  img:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.5 11h11L21 8H7"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h4"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>'
 };
 
 /* ============ data ============ */
@@ -300,7 +383,7 @@ function normStatus(v){const t=String(v||'').trim().toLowerCase();if(!t)return '
 function normDate(v){v=String(v||'').trim();if(!v)return '';if(/^\d{4}-\d{2}-\d{2}/.test(v))return v.slice(0,10);
   const m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/);if(m){const y=m[3].length===2?'20'+m[3]:m[3];return `${y}-${pad(m[1])}-${pad(m[2])}`;}
   const d=new Date(v);return isNaN(d)?'':ymd(d);}
-function normTime(v){v=String(v||'').trim().toLowerCase();if(!v)return '';const m=v.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?/);if(!m)return '';let h=+m[1];const mm=m[2]||'00';
+function normTime(v){v=String(v||'').trim().toLowerCase();if(!v)return '';if(/^\d{4}-/.test(v))return '';/* a date, not a time (the sheet once sent 1899-12-30 for 10:00) */const m=v.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?/);if(!m)return '';let h=+m[1];const mm=m[2]||'00';
   if(m[3]&&m[3][0]==='p'&&h<12)h+=12;if(m[3]&&m[3][0]==='a'&&h===12)h=0;return h<24?`${pad(h)}:${mm}`:'';}
 function normalize(d){
   const o=empty();
@@ -555,10 +638,12 @@ function custStats(c){
   const js=custJobs(c);
   const paid=r2(D.payments.filter(p=>p.customerId===c.id).reduce((s,p)=>s+num(p.amount),0));
   const labor=r2(js.filter(j=>['done','unpaid','paid'].includes(j.status)).reduce((s,j)=>s+totals(j).labor,0));
+  // what Moshe earned: labor plus any markup, never the cost of materials
+  const earned=r2(js.filter(j=>['done','unpaid','paid'].includes(j.status)).reduce((s,j)=>{const t=totals(j);return s+t.labor+t.mup;},0));
   const owes=r2(js.filter(j=>['done','unpaid'].includes(j.status)).reduce((s,j)=>s+jobBal(j),0));
   const done=js.filter(j=>['done','unpaid','paid'].includes(j.status));
   const dates=done.map(j=>j.date||'').filter(Boolean).sort();
-  return {jobs:js.length,doneCount:done.length,paid,labor,owes,last:dates.length?dates[dates.length-1]:'',firstD:dates[0]||'',open:js.filter(j=>OPEN.includes(j.status)&&j.status!=='done'&&j.status!=='unpaid').length};
+  return {jobs:js.length,doneCount:done.length,paid,labor,earned,owes,last:dates.length?dates[dates.length-1]:'',firstD:dates[0]||'',open:js.filter(j=>OPEN.includes(j.status)&&j.status!=='done'&&j.status!=='unpaid').length};
 }
 function invNo(j){const d=j.invoicedAt?new Date(j.invoicedAt):new Date();return `INV-${String(d.getFullYear()).slice(2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${String(j.id).replace(/[^a-zA-Z0-9]/g,'').slice(-4).toUpperCase()}`;}
 
@@ -590,9 +675,39 @@ function invoiceText(j){
   L.push(`Total: ${money(t.total)}`);if(paid)L.push(`Paid: ${money(paid)}`);L.push(`Balance due: ${money(jobBal(j))}`,'',`Pay by: ${S().payment}`,`Thank you! – ${S().signName}`);
   return L.join('\n');
 }
-let msg=null,fin=null,qk=null,rs=null,tk=null;
+let msg=null,fin=null,qk=null,rs=null,tk=null,lv=null;
+/* Edits on the job, customer and Settings pages wait for the Save button (kept on the phone until then). */
+let ED=lsGet('mhr-edits',{});
+function edKeyOf(h){const [v,id]=String(h||'#today').replace(/^#/,'').split('/');return v==='job'&&id?'job:'+id:v==='customer'&&id?'cust:'+id:v==='settings'?'set':'';}
+function edKey(){return edKeyOf(location.hash);}
+function edDirty(k){if(!(k&&ED[k]&&Object.keys(ED[k]).length))return false;if(sync.loaded&&((k.startsWith('job:')&&!getJob(k.slice(4)))||(k.startsWith('cust:')&&!getCust(k.slice(5))))){edClear(k);return false;}return true;}
+function edPut(k,ch){ED[k]=Object.assign({},ED[k]||{},ch);lsSet('mhr-edits',ED);}
+function edClear(k){delete ED[k];lsSet('mhr-edits',ED);}
+function edSet(){return Object.assign({},S(),ED.set||{});}
+function edApply(k){
+  if(!edDirty(k))return true;const ch=ED[k];
+  if(k.startsWith('job:')){const j=getJob(k.slice(4));if(j)put('Jobs',Object.assign({},j,ch));}
+  else if(k.startsWith('cust:')){const c=getCust(k.slice(5));if(c)put('Customers',Object.assign({},c,ch));}
+  else if(k==='set'){D.settings=Object.assign({},D.settings,ch);edClear(k);saveSettings();return true;}
+  edClear(k);return true;
+}
+function renderSaveBar(){
+  const b=$('#savebar');if(!b)return;const on=!!conn&&edDirty(edKey());
+  document.body.classList.toggle('editing',on);
+  if(!on){b.hidden=true;b.innerHTML='';return;}
+  b.innerHTML='<b>Changes not saved yet</b><button class="btn" data-act="edCancel">Undo changes</button><button class="btn p" data-act="edSave">Save</button>';b.hidden=false;
+}
+function renderLeave(){
+  const m=$('#modal');if(!lv){closeModal();return;}
+  m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lv-h"><h2 class="sec" id="lv-h">${lv.act?'Save your changes first?':'You didn’t save your changes'}</h2>
+    <p class="muted m0">${lv.act?'Your changes on this page aren’t saved yet.':'Save them before you leave this page?'}</p>
+    <button class="btn p go" data-act="lvSave" style="min-height:52px">Save</button>
+    <button class="btn" data-act="lvDiscard">Don’t save</button>
+    <button class="btn ghost" data-act="msgClose">Keep editing</button></div>`;m.hidden=false;
+}
+function lvGo(){const L=lv;closeModal();if(!L)return;if(L.to!==undefined){location.hash=L.to;}else if(L.act&&A[L.act]){A[L.act]({dataset:L.ds,tagName:'BUTTON',closest:()=>null});}}
 function openMsg(o){fin=null;qk=null;rs=null;tk=null;msg=Object.assign({kinds:[]},o);renderMsg();}
-function closeModal(){tk=null;if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
+function closeModal(){tk=null;lv=null;if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
 function finTotals(){const j=getJob(fin.jobId);if(!j)return {labor:0,mat:0,total:0};return totals(Object.assign({},j,{hoursWorked:fin.hw,materials:fin.mat,matMarkup:fin.mup,matMarkupFlat:fin.mupf,flatPrice:fin.flat}));}
 function renderResched(){
   const m=$('#modal');const j=rs&&getJob(rs.jobId);if(!j){closeModal();return;}const c=getCust(j.customerId)||{};
@@ -618,8 +733,8 @@ function renderTicket(){
     <div class="sec-top"><h2 class="sec" id="tk-h">Report a problem</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
     <p class="m0">What went wrong, or what would make the app easier? Say it in your own words.</p>
     <textarea id="tk-text" rows="5" placeholder="Example: I tapped Send invoice and nothing happened." aria-label="What went wrong">${esc(tk.text)}</textarea>
-    <p class="muted small m0" style="margin-top:-6px">🎤 You can tap the microphone on the keyboard and talk.</p>
-    <div class="row">${tk.photo?`<span class="small good">✓ Screenshot added</span><button class="btn sm ghost" data-act="tkNoPhoto">Remove</button>`:`<label class="btn sm" for="tk-photo">🖼 Add a screenshot (optional)</label><input id="tk-photo" type="file" accept="image/*" hidden>`}</div>
+    <p class="muted small m0" style="margin-top:-6px">You can tap the microphone on the keyboard and talk.</p>
+    <div class="row">${tk.photo?`<span class="small good">✓ Screenshot added</span><button class="btn sm ghost" data-act="tkNoPhoto">Remove</button>`:`<label class="btn sm" for="tk-photo">${ICON.img} Add a screenshot (optional)</label><input id="tk-photo" type="file" accept="image/*" hidden>`}</div>
     <p class="muted small m0">The app adds which screen you were on and its version, so it’s easier to fix.</p>
     <button class="btn p go" data-act="tkSend" style="min-height:52px" ${tk.sending?'disabled':''}>${tk.sending?'Sending…':'Send'}</button>
   </div>`;
@@ -658,7 +773,7 @@ function qkPreview(){
       ${!matches.length&&v.cust===''?'<option value="" selected>Choose…</option>':''}
       <optgroup label="Everyone else">${others.map(m=>`<option value="${m.id}" ${v.cust===m.id?'selected':''}>${esc(m.name)}</option>`).join('')}</optgroup></select></div>
     ${v.cust==='new'?`<div class="qk-row"><span>Name</span><input id="qk-name" data-qkf="name" value="${esc(v.name)}" placeholder="Customer’s name"></div>`:''}
-    ${c?`<p class="small muted m0" style="margin-left:82px">${(()=>{const s=custStats(c);return s.doneCount?`${s.doneCount} past jobs · ${money0(s.paid)} paid`+(s.owes?` · <b class="bad">owes ${money0(s.owes)}</b>`:''):'No past jobs yet';})()}</p>`:''}
+    ${c?`<p class="small muted m0" style="margin-left:82px">${(()=>{const s=custStats(c);return s.doneCount?`${s.doneCount} past jobs · ${money0(s.earned)} earned`+(s.owes?` · <b class="bad">owes ${money0(s.owes)}</b>`:''):'No past jobs yet';})()}</p>`:''}
     <div class="qk-row"><span>Job</span><input id="qk-title" data-qkf="title" value="${esc(v.title)}" placeholder="What needs doing"></div>
     <div class="qk-row"><span>Day</span><input id="qk-date" type="date" data-qkf="date" value="${esc(v.date)}"></div>
     <div class="qk-row"><span>Time</span><input id="qk-time" type="time" data-qkf="time" value="${esc(v.time)}"></div>
@@ -672,10 +787,10 @@ function renderQuick(){
   const m=$('#modal');if(!qk){closeModal();return;}
   const v=qkResolve();const W=qkWeek();
   m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="qk-h">
-    <div class="sec-top"><h2 class="sec" id="qk-h">⚡ Quick add</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
+    <div class="sec-top"><h2 class="sec" id="qk-h">${ICON.bolt}Quick add</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
     <div class="wk" id="qk-week">${W.map(x=>`<button data-act="qkDay" data-d="${x.k}" class="${v.date===x.k?'sel':''}"><b>${x.k===today()?'Today':parseYmd(x.k).toLocaleDateString('en-US',{weekday:'short',day:'numeric'})}</b>${x.L.length?`<span>${x.L.map(j=>esc((j.time?fmtTime(j.time).replace(':00','').replace(' ',''):'')+' '+lastName((getCust(j.customerId)||{}).name))).join(' · ')}</span>`:'<span class="free">free</span>'}</button>`).join('')}</div>
     <textarea id="qk-text" rows="3" placeholder="Say or type: Cohen, leaky faucet, Tuesday at 2" aria-label="Quick add">${esc(qk.text)}</textarea>
-    ${SR?`<button class="btn mic ${qk.listening?'on':''}" id="qk-mic" data-act="qkMic">${qk.listening?'● Listening… tap when done':'🎤 Tap and talk'}</button>`:'<p class="muted small m0" style="margin-top:-6px">🎤 Tap the microphone on your keyboard to talk instead of typing.</p>'}
+    ${SR?`<button class="btn mic ${qk.listening?'on':''}" id="qk-mic" data-act="qkMic">${qk.listening?'● Listening… tap when done':ICON.mic+' Tap and talk'}</button>`:'<p class="muted small m0" style="margin-top:-6px">Tap the microphone on your keyboard to talk instead of typing.</p>'}
     <div id="qk-auto">${qk.auto?`<div class="qk-count"><span>Saving in ${qk.auto}…</span><button class="btn sm" data-act="qkStop">Stop, let me check</button></div>`:''}</div>
     <div id="qk-prev">${qkPreview()}</div>
     <button class="btn p go" data-act="qkSave" style="min-height:52px">Save</button>
@@ -701,11 +816,10 @@ function say(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();c
 function qkSpoken(){const v=qkResolve();const c=v.cust&&v.cust!=='new'?getCust(v.cust):null;const who=c?c.name:(v.name||'new caller');
   return `${who}, ${v.title||'new job'}, ${v.date?(v.date===today()?'today':parseYmd(v.date).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}))+(v.time?' at '+fmtTime(v.time):''):'on the waiting list'}`;}
 function qkAutoSave(){
-  // hands-free: pick the first match if unsure (it's tagged "Check details" anyway), read it back, save in a few seconds
+  // after talking: pick the first match if unsure, read it back, and wait for him to tap Save
   const v=qkResolve();if(!v.cust){const p=qk.p||{};qk.over.cust=(p.matches&&p.matches[0])||'new';if(qk.over.cust==='new'&&!v.name)qk.over.name='New caller';}
   const sat=qkResolve().date&&parseYmd(qkResolve().date).getDay()===6;
-  qk.auto=4;say(qkSpoken()+(sat?'. That’s a Saturday, so check it later':'')+'. Saving.');renderQuick();
-  clearInterval(autoT);autoT=setInterval(()=>{if(!qk||!qk.auto){clearInterval(autoT);return;}qk.auto--;if(qk.auto<=0){clearInterval(autoT);qk.confirmOff=true;A.qkSave();say('Saved.');return;}const el=$('#qk-auto');if(el)el.innerHTML=`<div class="qk-count"><span>Saving in ${qk.auto}…</span><button class="btn sm" data-act="qkStop">Stop, let me check</button></div>`;},1000);
+  qk.auto=0;say(qkSpoken()+(sat?'. That’s a Saturday':'')+'. Tap Save if that’s right.');renderQuick();
 }
 function qkRefresh(){qk.p=quickParse(qk.text,D.customers,today());const pv=$('#qk-prev');if(pv)pv.innerHTML=qkPreview();const v=qkResolve();document.querySelectorAll('#qk-week button').forEach(b=>b.classList.toggle('sel',b.dataset.d===v.date));}
 function renderFinish(){
@@ -721,8 +835,8 @@ function renderFinish(){
       ${mk?`<div class="f"><label class="lab" for="fin-mup">Markup %</label><input id="fin-mup" data-fin="mup" type="number" min="0" step="1" inputmode="decimal" value="${esc(fin.mup)}"></div><div class="f"><label class="lab" for="fin-mupf">Markup $</label><input id="fin-mupf" data-fin="mupf" type="number" min="0" step="1" inputmode="decimal" value="${esc(fin.mupf)}"></div>`:''}
     </div>
     ${flat?'':`<p class="muted small m0">${money0(num(j.serviceFee))} for the first ${num(j.includedHours)} hr, then ${money0(num(j.hourlyRate))}/hr.</p>`}
-    <div class="row" style="flex-wrap:nowrap"><label class="btn wide" for="fin-photo">📷 ${after?`After photo added (${after}) · take another`:'Take the after photo'}</label><input id="fin-photo" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}">
-      <label class="btn" for="fin-upload">🖼 Upload</label><input id="fin-upload" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row" style="flex-wrap:nowrap"><label class="btn wide" for="fin-photo">${ICON.cam} ${after?`After photo added (${after}) · take another`:'Take the after photo'}</label><input id="fin-photo" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}">
+      <label class="btn" for="fin-upload">${ICON.img} Upload</label><input id="fin-upload" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
     <div class="fin-total"><span>Total for the customer</span><b id="fin-total">${money(t.total)}</b></div>
     <button class="btn p go" data-act="finishSave" data-k="invoice" style="min-height:52px">Done · send invoice</button>
     <div class="row"><select id="fin-method" aria-label="How they paid" style="max-width:130px">${METHODS.map(x=>`<option>${x}</option>`).join('')}</select><button class="btn g wide" data-act="finishSave" data-k="paid">Done · paid now</button></div>
@@ -928,31 +1042,33 @@ document.addEventListener('pointerup',pUp,true);document.addEventListener('point
 function renderTop(){
   const r=route();const titles={lists:'Lists',sukkah:'Sukkah season',today:'Today',jobs:'Jobs',waiting:'Waiting list',customers:'Customers',money:'Money',settings:'Settings',new:'New job'};
   let title=titles[r.v]||'';let back=false;
-  if(r.v==='job'){const j=getJob(r.id);title=j?j.title||'Job':'Job';back=true;}
+  let sub='';
+  if(r.v==='job'){const j=getJob(r.id);const c=j&&getCust(j.customerId);title=j?(c&&c.name)||'No customer':'Job';sub=j?j.title||'':'';back=true;}
   if(r.v==='customer'){const c=getCust(r.id);title=c?c.name:'Customer';back=true;}
   if(r.v==='new'||r.v==='sukkah'||r.v==='settings')back=true;
-  let cls='ok',txt='Saved';
+  let cls='ok',txt='';
   if(!conn){cls='';txt='';}
   else if(sync.busy){cls='';txt='Saving…';}
   else if(outbox.length&&sync.err==='offline'){cls='wait';txt=`${outbox.length} waiting · offline`;}
   else if(outbox.length&&sync.err){cls='err';txt='Not saved · retry';}
   else if(outbox.length){cls='wait';txt='Saving…';}
   else if(sync.err==='offline'){cls='wait';txt='Offline';}
-  $('#topbar').innerHTML=`${back?'<button class="back" data-act="back" aria-label="Back">‹</button>':''}<h1>${esc(title)}</h1>${txt?`<button class="sync ${cls}" data-act="syncNow">${esc(txt)}</button>`:''}${conn&&r.v!=='settings'?`<a class="gear" href="#settings" aria-label="Settings">${ICON.settings}</a>`:''}`;
+  $('#topbar').innerHTML=`${back?'<button class="back" data-act="back" aria-label="Back">‹</button>':(conn?'<img class="logo" src="mark.png" alt="">':'')}${sub?`<div class="tt"><h1>${esc(title)}</h1><span>${esc(sub)}</span></div>`:`<h1>${esc(title)}</h1>`}${txt?`<button class="sync ${cls}" data-act="syncNow">${esc(txt)}</button>`:''}${conn&&r.v!=='settings'?`<a class="gear" href="#settings" aria-label="Settings">${ICON.settings}</a>`:''}`;
 }
 function renderNav(){
-  const r=route();const nav=$('#nav');if(!conn){nav.hidden=true;$('#fab').hidden=true;$('#fabq').hidden=true;return;}
+  const r=route();const nav=$('#nav');if(!conn){nav.hidden=true;$('#acts').hidden=true;document.body.classList.remove('has-acts');return;}
   const tabs=[['today','Today',0],['jobs','Jobs',0],['waiting','Waiting',D.jobs.filter(isWaiting).length],['lists','Lists',0],['customers','Customers',0],['money','Money',0]];
   const active=r.v==='job'?'jobs':r.v==='customer'?'customers':r.v;
-  nav.innerHTML=`<div class="nav-in">${tabs.map(([k,l,n])=>`<a href="#${k}" ${active===k?'aria-current="page"':''}>${ICON[k]}${l}${n?`<span class="dot" style="background:var(--muted)">${n}</span>`:''}</a>`).join('')}</div>`;
-  nav.hidden=false;$('#fab').hidden=['new','settings'].includes(r.v);$('#fabq').hidden=$('#fab').hidden;
+  nav.innerHTML=`<div class="nav-in"><a class="side-brand" href="#today" aria-label="Today"><img src="mark.png" alt=""><span><b>MOSHE</b><span>HOME REPAIRS</span></span></a><div class="side-acts"><button class="btn p" data-act="quickOpen">${ICON.bolt} Quick add</button><a class="btn" href="#new">+ New job</a></div>${tabs.map(([k,l,n])=>`<a href="#${k}" ${active===k?'aria-current="page"':''}>${ICON[k]}${l}${n?`<span class="dot" style="background:var(--muted)">${n}</span>`:''}</a>`).join('')}</div>`;
+  nav.hidden=false;const showActs=['today','jobs','waiting'].includes(r.v);$('#acts').hidden=!showActs;document.body.classList.toggle('has-acts',showActs);
+  const fq=$('#fabq');if(fq&&!fq.dataset.done){fq.innerHTML=ICON.bolt+' Quick add';fq.dataset.done='1';}
 }
 function render(){
   if(pDown){pending=true;return;}
   renderTop();renderNav();
   const main=$('#main');
   const r=route();
-  if(!conn){if(!$('#su-url'))main.innerHTML=viewSetup();return;}
+  if(!conn){renderSaveBar();if(!$('#su-url'))main.innerHTML=viewSetup();return;}
   if(!sync.loaded&&!D.customers.length&&!D.jobs.length&&sync.busy){main.innerHTML='<p class="empty">Loading your jobs…</p>';return;}
   const V={lists:viewLists,sukkah:viewSukkah,today:viewToday,jobs:viewJobs,waiting:viewWaiting,job:viewJob,customers:viewCustomers,customer:viewCustomer,new:viewNew,money:viewMoney,settings:viewSettings}[r.v]||viewToday;
   // Keep whatever is being typed (and unsaved boxes like "Add a to-do") when the screen refreshes.
@@ -961,11 +1077,24 @@ function render(){
     main.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{if(el.type==='file'||el.type==='checkbox'||el.type==='radio')return;if((el===document.activeElement&&el.tagName!=='SELECT')||(!el.dataset.chg&&!el.dataset.inp))keep[el.id]=el.value;});
     const a=document.activeElement;if(a&&a.id&&main.contains(a)&&isTyping(a)){act=a.id;try{sel=[a.selectionStart,a.selectionEnd];}catch(e){}}
   }
-  main.innerHTML=V(r.id);main.dataset.key=key;
+  main.innerHTML=wide()&&SPLIT[r.v]?SPLIT[r.v](r.id):V(r.id);main.dataset.key=key;renderSaveBar();
   Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id]){el.value=keep[id];if(el.dataset.chg)el.dataset.dirty='1';}});
   if(act){const el=document.getElementById(act);if(el){el.focus({preventScroll:true});if(sel&&sel[0]!=null){try{el.setSelectionRange(sel[0],sel[1]);}catch(e){}}}}
 }
-window.addEventListener('hashchange',()=>{trail.push(location.hash||'#today');if(trail.length>6)trail.shift();if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);});
+const WIDE=window.matchMedia?window.matchMedia('(min-width:1000px)'):null;
+function wide(){return !!(WIDE&&WIDE.matches);}
+if(WIDE){const f=()=>{if(conn)render();};if(WIDE.addEventListener)WIDE.addEventListener('change',f);else if(WIDE.addListener)WIDE.addListener(f);}
+const SPLIT={
+  jobs:()=>`<div class="split"><div class="pane lp">${viewJobs()}</div><div class="pane"><p class="pick card">Pick a job on the left to see it here.</p></div></div>`,
+  job:id=>`<div class="split"><div class="pane lp">${viewJobs()}</div><div class="pane">${viewJob(id)}</div></div>`,
+  customers:()=>`<div class="split"><div class="pane lp">${viewCustomers()}</div><div class="pane"><p class="pick card">Pick a customer on the left to see them here.</p></div></div>`,
+  customer:id=>`<div class="split"><div class="pane lp">${viewCustomers()}</div><div class="pane">${viewCustomer(id)}</div></div>`
+};
+let curHash=location.hash||'#today';
+window.addEventListener('hashchange',()=>{
+  const was=curHash,now=location.hash||'#today',pk=edKeyOf(was);
+  if(pk&&pk!==edKeyOf(now)&&edDirty(pk)){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();history.replaceState(null,'',was);lv={key:pk,to:now};renderLeave();return;}
+  curHash=now;trail.push(location.hash||'#today');if(trail.length>6)trail.shift();if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);});
 
 /* ---------- setup ---------- */
 function viewSetup(){
@@ -996,7 +1125,12 @@ function jobLine(j,opts){
   const right=opts.right!==undefined?opts.right:(['done','unpaid'].includes(j.status)&&!t.total?'<b class="bad">No price</b>':j.status==='unpaid'?`<b class="bad">${money0(jobBal(j))}</b>`:t.total?`<b>${money0(t.total)}</b>`:'');
   const when=opts.sub!==undefined?opts.sub:(j.date?fmtDate(j.date)+(j.time?' · '+fmtTime(j.time):''):'');
   const big=opts.titleFirst?(j.title||'Job'):(c.name||'No customer');const small=opts.titleFirst?when:[j.title,when].filter(Boolean).join(' · ');
-  return `<a class="item" href="#job/${j.id}"><span class="l"><b>${esc(big)}</b><span>${esc(small)}</span></span><span class="r"><span class="pill st-${j.status}">${esc(SL[j.status]||j.status)}</span>${j.flag==='quick'?'<span class="pill st-check">Check details</span>':''}${right}</span></a>`;
+  const cur=route().v==='job'&&route().id===j.id?' cur':'';
+  return `<a class="item${cur}" href="#job/${j.id}"><span class="l"><b>${esc(big)}</b><span>${esc(small)}</span></span><span class="r">${opts.noPill?'':`<span class="pill st-${j.status}">${esc(SL[j.status]||j.status)}</span>`}${j.flag==='quick'?'<span class="pill st-check">Check details</span>':''}${right}</span></a>`;
+}
+function todoAddForm(){
+  return `<div class="row" style="flex-wrap:nowrap"><input id="td-new" placeholder="What do you need to do?" aria-label="New to-do"><button class="btn p" data-act="todoAdd">Add</button></div>
+    ${ui.tdDay?`<div class="row" style="flex-wrap:nowrap"><label class="lab" for="td-due" style="white-space:nowrap">Day</label><input id="td-due" type="date" style="max-width:190px"><button class="btn ghost sm" data-act="todoDay">No day</button></div>`:`<div><button class="btn sm" data-act="todoDay">${ICON.cal} Add a day (optional)</button></div>`}`;
 }
 function todoRow(td){
   const j=td.jobId?getJob(td.jobId):null;const t=today();
@@ -1023,10 +1157,12 @@ function viewToday(){
     <div class="big">${nc.address?`<a class="btn p" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nc.address)}" target="_blank" rel="noopener">${ICON.map} Navigate</a>`:`<a class="btn" href="#job/${nx.id}">Open job</a>`}
       ${nc.phone?`<a class="btn" href="tel:${esc(telNum(nc.phone))}">${ICON.call} Call</a>`:`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="confirm">${ICON.text} Message</button>`}
       ${nxLater?`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="${nx.date===tm?'remind':'confirm'}">${ICON.text} ${nx.date===tm?'Reminder':'Confirm time'}</button>`:`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="omw">${ICON.text} On my way</button>`}
-      <button class="btn g" data-act="finishOpen" data-id="${nx.id}">✓ Finish job</button></div></section>`:'';
+      <button class="btn g" data-act="finishOpen" data-id="${nx.id}">${ICON.check} Finish job</button></div></section>`:'';
   const se=sukkahSeason();const sk=(S().sukkahOn!==false&&t>=se.show&&t<=se.until)?sukkahList().todo.length:0;
+  const unsaved=Object.keys(ED).filter(edDirty).map(k=>k==='set'?['#settings','Settings']:k.startsWith('job:')?['#job/'+k.slice(4),custName((getJob(k.slice(4))||{}).customerId)+' (job)']:['#customer/'+k.slice(5),(getCust(k.slice(5))||{}).name||'Customer']);
   return `
   <p class="m0 muted">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p>
+  ${unsaved.length?`<p class="note warn">Changes not saved yet: ${unsaved.map(([h,n])=>`<a href="${h}">${esc(n)}</a>`).join(', ')}. Open to save or undo them.</p>`:''}
   ${hero}
   ${(()=>{const q=D.jobs.filter(j=>j.flag==='quick'&&j.status!=='cancelled');return q.length?`<section class="card"><div class="sec-top"><h2 class="sec">Quick notes to finish</h2><span class="small muted">${q.length}</span></div><div class="list">${q.map(j=>jobLine(j)).join('')}</div></section>`:'';})()}
   ${sk?`<a class="card hi" href="#sukkah" style="text-decoration:none;color:inherit"><div class="sec-top"><h2 class="sec">Sukkah season</h2><b>${sk}</b></div><p class="small m0">${sk} past sukkah customer${sk===1?' hasn’t':'s haven’t'} booked yet. Tap to message them.</p></a>`:''}
@@ -1034,9 +1170,9 @@ function viewToday(){
     ${todays.length?`<div class="list">${todays.map(j=>{const c=getCust(j.customerId)||{};return `<div style="padding:10px 0;display:flex;flex-direction:column;gap:8px"><a class="item" style="padding:0" href="#job/${j.id}"><span class="l"><b>${j.time?fmtTime(j.time)+' · ':''}${esc(c.name||'No customer')}</b><span>${esc([j.title,c.address].filter(Boolean).join(' · '))}</span></span><span class="r"><span class="pill st-${j.status}">${esc(SL[j.status])}</span></span></a>
       ${j.status==='scheduled'?`<div class="row"><button class="btn sm" data-act="msgJob" data-id="${j.id}" data-k="omw">On my way</button><button class="btn sm" data-act="msgJob" data-id="${j.id}" data-k="late">Running late</button>${c.address?`<a class="btn sm" href="${esc(mapsLink(c.address))}" target="_blank" rel="noopener">Directions</a>`:''}</div>`:''}</div>`;}).join('')}</div>`:'<p class="empty">Nothing scheduled today.</p>'}
   </section>
-  ${(()=>{const sh=D.shopping.filter(x=>!x.bought);if(!sh.length)return '';const st=[...new Set(sh.map(x=>x.store||'any store'))];return `<a class="card" href="#lists" data-act="listTab" data-k="shop" style="text-decoration:none;color:inherit"><div class="sec-top"><h2 class="sec">🛒 Shopping</h2><b>${sh.length}</b></div><p class="small muted m0">${sh.length} item${sh.length===1?'':'s'} to buy · ${esc(st.slice(0,3).join(', '))}${st.length>3?'…':''}</p></a>`;})()}
+  ${(()=>{const sh=D.shopping.filter(x=>!x.bought);if(!sh.length)return '';const st=[...new Set(sh.map(x=>x.store||'any store'))];return `<a class="card" href="#lists" data-act="listTab" data-k="shop" style="text-decoration:none;color:inherit"><div class="sec-top"><h2 class="sec">${ICON.cart}Shopping</h2><b>${sh.length}</b></div><p class="small muted m0">${sh.length} item${sh.length===1?'':'s'} to buy · ${esc(st.slice(0,3).join(', '))}${st.length>3?'…':''}</p></a>`;})()}
   <section class="card"><div class="sec-top"><h2 class="sec">To do</h2><span class="small muted">${open.length} open${later?` · ${later} later`:''} · <a href="#lists" data-act="listTab" data-k="todo">all</a></span></div>
-    <div class="row" style="flex-wrap:nowrap"><input id="td-new" placeholder="Add a to-do" aria-label="New to-do"><input id="td-due" type="date" style="max-width:150px" aria-label="Due date"><button class="btn p" data-act="todoAdd" aria-label="Add">+</button></div>
+    ${todoAddForm()}
     ${open.length?`<div class="list">${open.map(todoRow).join('')}</div>`:'<p class="empty">All caught up.</p>'}
     ${doneToday.length?`<details ${ui.doneOpen?'open':''} data-tog="doneOpen"><summary>Done today (${doneToday.length})</summary><div class="list">${doneToday.map(todoRow).join('')}</div></details>`:''}
   </section>
@@ -1057,15 +1193,15 @@ function shopRow(x,withJob){
   return `<div class="todo ${x.bought?'done':''}"><input type="checkbox" ${x.bought?'checked':''} data-act="shopTick" data-id="${x.id}" aria-label="Bought: ${esc(x.text)}"><span class="t">${esc(x.text)}${withJob&&x.jobId?`<small>${esc(shopFor(x))}</small>`:''}${x.bought&&x.price!==''?`<small>Paid ${money(x.price)}${x.matAdded?' · added to materials':''}</small>`:''}</span><button class="x" data-act="shopDel" data-id="${x.id}" aria-label="Delete">×</button></div>`;
 }
 function shopAddForm(jobId){
-  return `<div class="grid2">
-    <div class="f full"><label class="lab" for="sp-item">Item</label><input id="sp-item" placeholder="e.g. 2 door hinges, 3.5 inch"></div>
-    <div class="f"><label class="lab" for="sp-store">Store</label><input id="sp-store" list="sp-stores" placeholder="Home Depot"><datalist id="sp-stores">${storeList().map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
-    ${jobId?`<input type="hidden" id="sp-job" value="${jobId}">`:`<div class="f"><label class="lab" for="sp-job">For</label><select id="sp-job">${jobOptions('')}</select></div>`}
-  </div><div><button class="btn p" data-act="shopAdd">+ Add to shopping list</button></div>`;
+  const st=storeList().slice(0,4);const cur=ui.shopStore||'';
+  return `<div class="row" style="flex-wrap:nowrap"><input id="sp-item" placeholder="What to buy? 2 door hinges" aria-label="Item to buy"><button class="btn p" data-act="shopAdd">Add</button></div>
+    <div class="row" style="gap:6px"><span class="small muted">Store</span>${st.map(x=>`<button class="chip" data-act="shopStore" data-k="${esc(x)}" aria-pressed="${cur===x}">${esc(x)}</button>`).join('')}
+      <input id="sp-store" list="sp-stores" placeholder="Other store" value="${esc(cur)}" aria-label="Store" style="width:140px;flex:1 1 120px"><datalist id="sp-stores">${storeList().map(x=>`<option value="${esc(x)}">`).join('')}</datalist></div>
+    ${jobId?`<input type="hidden" id="sp-job" value="${jobId}">`:`<div class="f"><label class="lab" for="sp-job">For a job? (optional)</label><select id="sp-job">${jobOptions('')}</select></div>`}`;
 }
 function viewLists(){
   const tab=ui.listTab||'todo';
-  const seg=`<div class="seg" role="group" aria-label="List">${[['todo','To do'],['shop','Shopping']].map(([k,l])=>`<button data-act="listTab" data-k="${k}" aria-pressed="${tab===k}">${l}${k==='shop'&&D.shopping.filter(x=>!x.bought).length?` (${D.shopping.filter(x=>!x.bought).length})`:''}</button>`).join('')}</div>`;
+  const seg=`<div class="seg" role="group" aria-label="List" style="grid-template-columns:1fr 1fr">${[['todo','To do'],['shop','Shopping']].map(([k,l])=>`<button data-act="listTab" data-k="${k}" aria-pressed="${tab===k}">${l}${k==='shop'&&D.shopping.filter(x=>!x.bought).length?` (${D.shopping.filter(x=>!x.bought).length})`:''}</button>`).join('')}</div>`;
   if(tab==='shop'){
     const open=D.shopping.filter(x=>!x.bought);const bought=D.shopping.filter(x=>x.bought).sort((a,b)=>String(b.boughtAt||'').localeCompare(String(a.boughtAt||''))).slice(0,30);
     const stores=[...new Set(open.map(x=>x.store||'Any store'))].sort();
@@ -1075,7 +1211,7 @@ function viewLists(){
   }
   const t=today();const open=D.todos.filter(x=>!x.done).sort((a,b)=>(a.due||'9').localeCompare(b.due||'9'));
   const done=D.todos.filter(x=>x.done).sort((a,b)=>String(b.doneAt||'').localeCompare(String(a.doneAt||''))).slice(0,30);
-  return seg+`<section class="card"><div class="row" style="flex-wrap:nowrap"><input id="td-new" placeholder="Add a to-do" aria-label="New to-do"><input id="td-due" type="date" style="max-width:150px" aria-label="Due date"><button class="btn p" data-act="todoAdd" aria-label="Add">+</button></div>
+  return seg+`<section class="card">${todoAddForm()}
     ${open.length?`<div class="list">${open.map(todoRow).join('')}</div>`:'<p class="empty">All caught up.</p>'}</section>
     ${done.length?`<details ${ui.doneAllOpen?'open':''} data-tog="doneAllOpen"><summary>Done (${done.length})</summary><section class="card"><div class="list">${done.map(todoRow).join('')}</div></section></details>`:''}`;
 }
@@ -1144,7 +1280,7 @@ function viewWaiting(){
   const by=g=>W.filter(j=>key(j)===g).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
   if(!W.length)return '<p class="empty">The waiting list is empty. New requests you add with “+ Job” show up here until you give them a date.</p>';
   return `<p class="muted small m0">${W.length} request${W.length===1?'':'s'} not on the schedule yet. Open one and pick a date to schedule it.</p>
-  ${groups.map(([g,l])=>{const L=by(g);return L.length?`<section class="card"><div class="sec-top"><h2 class="sec">${l}</h2><span class="small muted">${L.length}</span></div><div class="list">${L.map(j=>jobLine(j,{sub:'',right:j.notes&&/slotted/i.test(j.notes)?`<span class="small muted">${esc(j.notes.replace(/ \(from old waiting list\)\./,'').replace(/^Slotted (into|in for) /,''))}</span>`:''})).join('')}</div></section>`:'';}).join('')}`;
+  ${groups.map(([g,l])=>{const L=by(g);return L.length?`<section class="card"><div class="sec-top"><h2 class="sec">${l}</h2><span class="small muted">${L.length}</span></div><div class="list">${L.map(j=>jobLine(j,{sub:'',noPill:true,right:j.notes&&/slotted/i.test(j.notes)?`<span class="small muted">${esc(j.notes.replace(/ \(from old waiting list\)\./,'').replace(/^Slotted (into|in for) /,''))}</span>`:''})).join('')}</div></section>`:'';}).join('')}`;
 }
 
 /* ---------- jobs ---------- */
@@ -1177,8 +1313,8 @@ function custMatches(q){
 function custSummary(c,full){
   const s=custStats(c);const js=custJobs(c).filter(j=>['done','unpaid','paid'].includes(j.status)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   return `<div class="cust-box"><b>${esc(c.name)}</b><span class="small muted">${esc([c.phone,c.address].filter(Boolean).join(' · '))}</span>
-    <span class="small">${s.doneCount?`${s.doneCount} past job${s.doneCount===1?'':'s'} · ${money0(s.paid)} paid in total${s.last?` · last ${fmtDateY(s.last)}`:''}`:'New customer, no past jobs yet'}${s.owes?` · <b class="bad">owes ${money0(s.owes)}</b>`:''}</span>
-    ${c.notes?`<span class="small">📝 ${esc(c.notes)}</span>`:''}
+    <span class="small">${s.doneCount?`${s.doneCount} past job${s.doneCount===1?'':'s'} · ${money0(s.earned)} earned (labor)${s.last?` · last ${fmtDateY(s.last)}`:''}`:'New customer, no past jobs yet'}${s.owes?` · <b class="bad">owes ${money0(s.owes)}</b>`:''}</span>
+    ${c.notes?`<span class="small">Note: ${esc(c.notes)}</span>`:''}
     ${full&&js.length?`<div class="hist">${js.slice(0,4).map(j=>`<div><span>${esc(fmtDateY(j.date))} · ${esc(j.title)}</span><span>${money0(totals(j).total)}</span></div>`).join('')}${js.length>4?`<div class="muted"><span>and ${js.length-4} more</span><span></span></div>`:''}</div>`:''}</div>`;
 }
 function viewNew(){
@@ -1217,7 +1353,7 @@ function viewNew(){
 }
 function matchList(m,q){
   if(String(q||'').trim().length<2)return `<div class="row"><button class="btn" data-act="draftNewCust">+ New customer</button></div>`;
-  return `${m.map(c=>{const s=custStats(c);return `<button class="match" data-act="draftPick" data-id="${c.id}"><span><b>${esc(c.name)}</b><br><span class="small muted">${esc([c.phone,c.address].filter(Boolean).join(' · ')||'No details')}</span></span><span class="small muted" style="text-align:right">${s.doneCount} job${s.doneCount===1?'':'s'}<br>${money0(s.paid)}</span></button>`;}).join('')}
+  return `${m.map(c=>{const s=custStats(c);return `<button class="match" data-act="draftPick" data-id="${c.id}"><span><b>${esc(c.name)}</b><br><span class="small muted">${esc([c.phone,c.address].filter(Boolean).join(' · ')||'No details')}</span></span><span class="small muted" style="text-align:right">${s.doneCount} job${s.doneCount===1?'':'s'}<br>${money0(s.earned)}</span></button>`;}).join('')}
     <div class="row" style="margin-top:8px"><button class="btn" data-act="draftNewCust">+ New customer “${esc(q)}”</button></div>`;
 }
 function saveDraft(){
@@ -1243,10 +1379,10 @@ function nextStep(j){
   const hint=x=>`<p class="muted small m0">${x}</p>`;
   switch(j.status){
     case 'new':case 'waiting':case 'followup':
-      return j.date?b('finishOpen','✓ Finish job','p')+hint('When the work is done, tap Finish to add hours, materials and an after photo.')
-        :b('pickDate','📅 Pick a date to schedule it','p')+`<div class="row">${small('msgJob','Message','confirm')}${j.status!=='followup'?small('quickStatus','Need to follow up','followup'):''}${j.status!=='waiting'?small('quickStatus','Waiting on reply','waiting'):''}</div>`;
+      return j.date?b('finishOpen',ICON.check+' Finish job','p')+hint('When the work is done, tap Finish to add hours, materials and an after photo.')
+        :b('pickDate',ICON.cal+' Pick a date to schedule it','p')+`<div class="row">${small('msgJob','Message','confirm')}${j.status!=='followup'?small('quickStatus','Need to follow up','followup'):''}${j.status!=='waiting'?small('quickStatus','Waiting on reply','waiting'):''}</div>`;
     case 'scheduled':
-      return (j.date&&j.date>td?`<div class="row">${small('msgJob','Confirm time','confirm')}${small('msgJob','Send reminder','remind')}${small('reschedOpen','📅 Reschedule')}</div>`:`<div class="row">${small('msgJob','On my way','omw')}${small('msgJob','Running late','late')}${small('reschedOpen','📅 Reschedule')}</div>`)+b('finishOpen','✓ Finish job','p');
+      return (j.date&&j.date>td?`<div class="row">${small('msgJob','Confirm time','confirm')}${small('msgJob','Send reminder','remind')}${small('reschedOpen',ICON.cal+' Reschedule')}</div>`:`<div class="row">${small('msgJob','On my way','omw')}${small('msgJob','Running late','late')}${small('reschedOpen',ICON.cal+' Reschedule')}</div>`)+b('finishOpen',ICON.check+' Finish job','p');
     case 'done':
       return t.total>0?b('invoiceSend','Send invoice','p')+`<div class="row">${small('payOpen','Paid on the spot')}${small('msgJob','Text the invoice instead','invoice')}</div>`
         :b('finishOpen','Add the price','p')+hint('This job has no price yet.');
@@ -1254,20 +1390,20 @@ function nextStep(j){
       return b('payOpen',`Record payment · ${money0(bal)}`,'g')+`<div class="row">${small('msgJob','Payment reminder','payremind')}${small('invoiceSend','Send invoice again')}</div>`;
     case 'paid':
       return j.reviewAskedAt?`<p class="m0"><b class="good">✓ All done.</b> <span class="muted small">Review asked ${fmtDateY(ymd(new Date(j.reviewAskedAt)))}.</span></p>`
-        :b('msgJob','⭐ Thank you + ask for a review','p','data-k="thanks"')+hint(S().reviewLink?'Happy customers are the best time to ask.':'Add your Google review link in Settings so it’s included.');
+        :b('msgJob',ICON.star+' Thank you + ask for a review','p','data-k="thanks"')+hint(S().reviewLink?'Happy customers are the best time to ask.':'Add your Google review link in Settings so it’s included.');
     case 'cancelled':
       return b('quickStatus','Bring this job back','',`data-k="new"`);
   }
   return '';
 }
 function viewJob(id){
-  const j=getJob(id);if(!j)return '<p class="empty">This job was deleted.</p><a class="btn" href="#jobs">Back to jobs</a>';
+  const j0=getJob(id);const j=j0?Object.assign({},j0,ED['job:'+id]||{}):null;if(!j)return '<p class="empty">This job was deleted.</p><a class="btn" href="#jobs">Back to jobs</a>';
   const c=getCust(j.customerId)||{};const t=totals(j);const paid=jobPaid(j);const bal=jobBal(j);
   const tds=D.todos.filter(x=>x.jobId===j.id).sort((a,b)=>Number(a.done)-Number(b.done));
   const ph=D.photos.filter(p=>p.jobId===j.id);const hasB=ph.some(p=>p.kind==='before'),hasA=ph.some(p=>p.kind==='after');
   const pays=jobPays(j);const g=gcal(j);
   return `
-  ${j.flag==='quick'?`<div class="note warn"><b>Added with Quick add.</b> Check the customer, job and time.${/Quick add: /.test(j.notes||'')?`<br><span class="small">You said: “${esc(String(j.notes).split('Quick add: ').pop())}”</span>`:''}<div class="row" style="margin-top:6px"><button class="btn sm p" data-act="quickOk" data-id="${j.id}">✓ Looks good</button></div></div>`:''}
+  ${j.flag==='quick'?`<div class="note warn"><b>Added with Quick add.</b> Check the customer, job and time.${/Quick add: /.test(j.notes||'')?`<br><span class="small">You said: “${esc(String(j.notes).split('Quick add: ').pop())}”</span>`:''}<div class="row" style="margin-top:6px"><button class="btn sm p" data-act="quickOk" data-id="${j.id}">${ICON.check} Looks good</button></div></div>`:''}
   <a class="cust-box" href="#customer/${c.id||''}">${c.id?custSummary(c,false).replace(/^<div class="cust-box">|<\/div>$/g,''):'<b>No customer</b>'}</a>
   <div class="quick">
     ${c.phone?`<a class="btn" href="tel:${esc(telNum(c.phone))}">${ICON.call}Call</a>`:'<button class="btn" disabled>'+ICON.call+'Call</button>'}
@@ -1282,13 +1418,13 @@ function viewJob(id){
   <section class="card"><h2 class="sec">Job</h2>
     <div class="f"><label class="lab" for="j-title">What needs doing</label><input id="j-title" data-chg="job" data-id="${j.id}" data-k="title" value="${esc(j.title)}"></div>
     <div class="f"><label class="lab" for="j-desc">Details</label><textarea id="j-desc" rows="2" data-chg="job" data-id="${j.id}" data-k="description">${esc(j.description)}</textarea></div>
-    <div class="grid3"><div class="f"><label class="lab" for="j-date">Date</label><input id="j-date" type="date" data-chg="job" data-id="${j.id}" data-k="date" value="${esc(j.date)}"></div>
+    <div class="grid2"><div class="f full"><label class="lab" for="j-date">Day</label><input id="j-date" type="date" data-chg="job" data-id="${j.id}" data-k="date" value="${esc(j.date)}"></div>
       <div class="f"><label class="lab" for="j-time">Time</label><input id="j-time" type="time" data-chg="job" data-id="${j.id}" data-k="time" value="${esc(j.time)}"></div>
-      <div class="f"><label class="lab" for="j-hours">Est. hours</label><input id="j-hours" type="number" step="0.5" min="0" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="hours" value="${esc(j.hours)}"></div></div>
+      <div class="f"><label class="lab" for="j-hours">Hours (guess)</label><input id="j-hours" type="number" step="0.5" min="0" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="hours" value="${esc(j.hours)}"></div></div>
     ${j.date?`<div class="row">${g?`<a class="btn sm" href="${esc(g)}" target="_blank" rel="noopener">Add to Google Calendar</a>`:''}<button class="btn sm" data-act="unschedule" data-id="${j.id}">Take off the schedule</button></div>`:''}
     <div class="f"><label class="lab" for="j-notes">Private notes</label><textarea id="j-notes" rows="2" data-chg="job" data-id="${j.id}" data-k="notes" placeholder="Only you see these">${esc(j.notes)}</textarea></div>
   </section>
-  <section class="card"><div class="sec-top"><h2 class="sec">🛒 Shopping for this job</h2><span class="small muted">${D.shopping.filter(x=>x.jobId===j.id&&!x.bought).length||''}</span></div>
+  <section class="card"><div class="sec-top"><h2 class="sec">${ICON.cart}Shopping for this job</h2><span class="small muted">${D.shopping.filter(x=>x.jobId===j.id&&!x.bought).length||''}</span></div>
     ${D.shopping.filter(x=>x.jobId===j.id).length?`<div class="list">${D.shopping.filter(x=>x.jobId===j.id).sort((a,b)=>Number(a.bought)-Number(b.bought)).map(x=>shopRow(x,false)).join('')}</div>`:''}
     ${shopAddForm(j.id)}
   </section>
@@ -1297,10 +1433,10 @@ function viewJob(id){
     <div class="row" style="flex-wrap:nowrap"><input id="jt-new" placeholder="Add a to-do for this job" aria-label="New to-do"><input id="jt-due" type="date" style="max-width:150px" aria-label="Due date"><button class="btn p" data-act="jobTodoAdd" data-id="${j.id}" aria-label="Add">+</button></div>
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">Photos</h2><span class="small muted">${ph.length}</span></div>
-    <div class="row"><label class="btn wide" for="ph-before">📷 Before</label><input id="ph-before" type="file" accept="image/*" capture="environment" hidden data-photo="before" data-id="${j.id}">
-      <label class="btn wide" for="ph-after">📷 After</label><input id="ph-after" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}"></div>
-    <div class="row small muted" style="gap:6px">Took it already? <label class="btn sm" for="up-before">🖼 Upload before</label><input id="up-before" type="file" accept="image/*" multiple hidden data-photo="before" data-id="${j.id}">
-      <label class="btn sm" for="up-after">🖼 Upload after</label><input id="up-after" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row"><label class="btn wide" for="ph-before">${ICON.cam} Before</label><input id="ph-before" type="file" accept="image/*" capture="environment" hidden data-photo="before" data-id="${j.id}">
+      <label class="btn wide" for="ph-after">${ICON.cam} After</label><input id="ph-after" type="file" accept="image/*" capture="environment" hidden data-photo="after" data-id="${j.id}"></div>
+    <div class="row small muted" style="gap:6px">Took it already? <label class="btn sm" for="up-before">${ICON.img} Upload before</label><input id="up-before" type="file" accept="image/*" multiple hidden data-photo="before" data-id="${j.id}">
+      <label class="btn sm" for="up-after">${ICON.img} Upload after</label><input id="up-after" type="file" accept="image/*" multiple hidden data-photo="after" data-id="${j.id}"></div>
     ${ph.length?`<div class="thumbs">${ph.map(p=>thumb(p,true)).join('')}</div>`:'<p class="empty small">Snap a before photo when you arrive and an after photo when you’re done.</p>'}
     ${ph.length?`<div class="row">${hasA&&hasB?`<button class="btn sm p" data-act="shareBA" data-id="${j.id}">Share before &amp; after</button>`:''}<button class="btn sm" data-act="sharePhotos" data-id="${j.id}">Send photos</button></div>`:''}
   </section>
@@ -1332,27 +1468,27 @@ function custOptions(sel){return `<option value="">Choose…</option>`+D.custome
 function custRows(){
   const q=ui.custSearch.trim().toLowerCase();const d=digits(q);
   const l=D.customers.filter(c=>!q||normName(c.name).includes(normName(q))||(d.length>=3&&digits(c.phone).includes(d))||[c.address,c.email,c.tags,c.notes].join(' ').toLowerCase().includes(q)).map(c=>({c,s:custStats(c)}));
-  const by={recent:(a,b)=>(b.s.last||b.c.createdAt||'').localeCompare(a.s.last||a.c.createdAt||''),paid:(a,b)=>b.s.paid-a.s.paid,jobs:(a,b)=>b.s.doneCount-a.s.doneCount,owes:(a,b)=>b.s.owes-a.s.owes,az:(a,b)=>lastKey(a.c.name).localeCompare(lastKey(b.c.name))}[ui.custSort];
+  const by={recent:(a,b)=>(b.s.last||b.c.createdAt||'').localeCompare(a.s.last||a.c.createdAt||''),paid:(a,b)=>b.s.earned-a.s.earned,jobs:(a,b)=>b.s.doneCount-a.s.doneCount,owes:(a,b)=>b.s.owes-a.s.owes,az:(a,b)=>lastKey(a.c.name).localeCompare(lastKey(b.c.name))}[ui.custSort];
   l.sort(by);
   if(!l.length)return `<p class="empty">${D.customers.length?'No customers match.':'No customers yet. They’re added when you save a job.'}</p>`;
   const az=ui.custSort==='az'&&!q;let lastL='';
   const letterOf=c=>{const k=lastKey(c.name).charAt(0).toUpperCase();return /[A-Z]/.test(k)?k:'#';};
   const letters=az?[...new Set(l.map(x=>letterOf(x.c)))]:[];
   const rail=az&&letters.length>3;setTimeout(()=>{const cl=$('#cust-list');if(cl)cl.classList.toggle('has-rail',rail);},0);
-  return `${rail?`<nav class="az-rail" aria-label="Jump to letter">${letters.map(x=>`<span data-az="${x}" role="button" tabindex="0" aria-label="Jump to ${x}">${x}</span>`).join('')}</nav>`:''}<div class="list">${(az?l:l.slice(0,200)).map(({c,s})=>{let h='';if(az){const L=letterOf(c);if(L!==lastL){lastL=L;h=`<div class="letter" id="L-${L}">${L}</div>`;}}return h+`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${esc([c.phone,s.last?'last job '+fmtDateY(s.last):''].filter(Boolean).join(' · '))}</span></span><span class="r"><b>${money0(s.paid)}</b><span class="small muted">${s.doneCount} job${s.doneCount===1?'':'s'}</span>${s.owes?`<span class="small bad">owes ${money0(s.owes)}</span>`:''}</span></a>`;}).join('')}</div>`;
+  return `${rail?`<nav class="az-rail" aria-label="Jump to letter">${letters.map(x=>`<span data-az="${x}" role="button" tabindex="0" aria-label="Jump to ${x}">${x}</span>`).join('')}</nav>`:''}<div class="list">${(az?l:l.slice(0,200)).map(({c,s})=>{let h='';if(az){const L=letterOf(c);if(L!==lastL){lastL=L;h=`<div class="letter" id="L-${L}">${L}</div>`;}}return h+`<a class="item${route().v==='customer'&&route().id===c.id?' cur':''}" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${esc([c.phone,s.last?'last job '+fmtDateY(s.last):''].filter(Boolean).join(' · '))}</span></span><span class="r"><b>${money0(s.earned)}</b><span class="small muted">${s.doneCount} job${s.doneCount===1?'':'s'}</span>${s.owes?`<span class="small bad">owes ${money0(s.owes)}</span>`:''}</span></a>`;}).join('')}</div>`;
 }
 function viewCustomers(){
   return `<button class="btn p" data-act="custNew">+ New customer</button>
-  <div class="row" style="flex-wrap:nowrap"><input type="search" id="cust-search" data-inp="custSearch" placeholder="Search name, phone, address" value="${esc(ui.custSearch)}" aria-label="Search customers">
-    <select id="cust-sort" data-chg="custSort" style="max-width:150px" aria-label="Sort">${[['az','A–Z (last name)'],['recent','Recent'],['paid','Paid most'],['jobs','Most jobs'],['owes','Owes money']].map(([k,l])=>`<option value="${k}" ${ui.custSort===k?'selected':''}>${l}</option>`).join('')}</select></div>
-  <p class="muted small m0">${D.customers.length} customers · ${money0(D.payments.reduce((s,p)=>s+num(p.amount),0))} collected in total</p>
+  <div class="row" style="flex-wrap:nowrap"><input type="search" id="cust-search" data-inp="custSearch" placeholder="Name, phone or street" value="${esc(ui.custSearch)}" aria-label="Search customers">
+    <select id="cust-sort" data-chg="custSort" style="width:auto;flex-shrink:0" aria-label="Sort">${[['az','A–Z'],['recent','Recent'],['paid','Earned most'],['jobs','Most jobs'],['owes','Owes']].map(([k,l])=>`<option value="${k}" ${ui.custSort===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <p class="muted small m0">${D.customers.length} customers · ${money0(D.jobs.filter(j=>['done','unpaid','paid'].includes(j.status)).reduce((s,j)=>{const t=totals(j);return s+t.labor+t.mup;},0))} earned for labor</p>
   <section class="card" id="cust-list">${custRows()}</section>`;
 }
 function viewCustomer(id){
-  const c=getCust(id);if(!c)return '<p class="empty">This customer was removed.</p><a class="btn" href="#customers">Back</a>';
+  const c0=getCust(id);const c=c0?Object.assign({},c0,ED['cust:'+id]||{}):null;if(!c)return '<p class="empty">This customer was removed.</p><a class="btn" href="#customers">Back</a>';
   const s=custStats(c);const js=custJobs(c).sort((a,b)=>(b.date||b.createdAt||'').localeCompare(a.date||a.createdAt||''));
   const ph=D.photos.filter(p=>p.customerId===c.id);const others=D.customers.filter(x=>x.id!==c.id).sort((a,b)=>lastKey(a.name).localeCompare(lastKey(b.name)));
-  const avg=s.doneCount?s.labor/s.doneCount:0;
+  const avg=s.doneCount?s.earned/s.doneCount:0;
   return `
   <div class="quick">
     ${c.phone?`<a class="btn" href="tel:${esc(telNum(c.phone))}">${ICON.call}Call</a>`:'<button class="btn" disabled>'+ICON.call+'Call</button>'}
@@ -1361,7 +1497,7 @@ function viewCustomer(id){
     ${c.address?`<a class="btn" href="${esc(mapsLink(c.address))}" target="_blank" rel="noopener">${ICON.map}Map</a>`:'<button class="btn" disabled>'+ICON.map+'Map</button>'}
   </div>
   <div class="tiles">
-    <div class="tile"><span>Paid in total</span><b>${money0(s.paid)}</b></div>
+    <div class="tile"><span>Earned (labor)</span><b>${money0(s.earned)}</b></div>
     <div class="tile"><span>Jobs done</span><b>${s.doneCount}</b></div>
     <div class="tile"><span>Average job</span><b>${money0(avg)}</b></div>
     <div class="tile"><span>Owes</span><b class="${s.owes?'bad':''}">${money0(s.owes)}</b></div>
@@ -1406,7 +1542,7 @@ function viewMoney(){
   const owed=r2(unpaid.reduce((s,j)=>s+jobBal(j),0));
   const months=[...Array(12)].map((_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-11+i,1);const k=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;const x=laborIn(dd=>dd.startsWith(k));return {k,l:d.toLocaleDateString('en-US',{month:'short'}),lab:x.lab,h:x.h,n:x.n,cur:i===11};});
   const max=Math.max(1,...months.map(m=>m.lab),num(S().monthlyGoal));
-  const top=D.customers.map(c=>({c,s:custStats(c)})).filter(x=>x.s.paid>0).sort((a,b)=>b.s.paid-a.s.paid).slice(0,8);
+  const top=D.customers.map(c=>({c,s:custStats(c)})).filter(x=>x.s.earned>0).sort((a,b)=>b.s.earned-a.s.earned).slice(0,8);
   const rate=x=>x.h?money0(x.lab/x.h)+'/hr':'–';
   return `
   <div class="tiles">
@@ -1424,14 +1560,14 @@ function viewMoney(){
   <section class="card"><div class="sec-top"><h2 class="sec">Owed to you</h2><b class="${owed?'bad':''}">${money0(owed)}</b></div>
     ${unpaid.length?`<div class="list">${unpaid.map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'',right:`<b class="bad">${money0(jobBal(j))}</b>`})).join('')}</div>`:'<p class="empty">Everyone’s paid up.</p>'}
   </section>
-  <section class="card"><h2 class="sec">Top customers</h2>
-    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} jobs</span></span><span class="r"><b>${money0(s.paid)}</b></span></a>`).join('')}</div>`:'<p class="empty">No payments yet.</p>'}
+  <section class="card"><h2 class="sec">Top customers (labor)</h2>
+    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} jobs</span></span><span class="r"><b>${money0(s.earned)}</b></span></a>`).join('')}</div>`:'<p class="empty">No payments yet.</p>'}
   </section>`;
 }
 
 /* ---------- settings ---------- */
 function viewSettings(){
-  const s=S();const f=(id,l,k,type,ph)=>`<div class="f"><label class="lab" for="${id}">${l}</label><input id="${id}" ${type?`type="${type}"`:''} ${type==='number'?'inputmode="decimal" step="any"':''} data-chg="set" data-k="${k}" value="${esc(s[k])}" ${ph?`placeholder="${esc(ph)}"`:''}></div>`;
+  const s=edSet();const f=(id,l,k,type,ph)=>`<div class="f"><label class="lab" for="${id}">${l}</label><input id="${id}" ${type?`type="${type}"`:''} ${type==='number'?'inputmode="decimal" step="any"':''} data-chg="set" data-k="${k}" value="${esc(s[k])}" ${ph?`placeholder="${esc(ph)}"`:''}></div>`;
   return `<section class="card"><h2 class="sec">Business</h2>
     ${f('s-biz','Business name','business')}${f('s-sign','Sign messages as','signName')}
     <div class="grid2">${f('s-phone','Business phone','bizPhone','tel')}${f('s-email','Business email','bizEmail','email')}</div>
@@ -1444,8 +1580,8 @@ function viewSettings(){
       <div class="row" style="flex-wrap:nowrap"><input id="r-name-${i}" data-chg="rate" data-i="${i}" data-k="name" value="${esc(r.name)}" placeholder="Rate name" aria-label="Rate ${i+1} name">
       <label class="row small" style="flex-wrap:nowrap;white-space:nowrap;gap:6px"><input type="radio" name="defrate" data-chg="defRate" value="${i}" ${num(s.defaultRate)===i?'checked':''} style="width:20px;height:20px">Default</label></div>
       <div class="grid3"><div class="f"><label class="lab" for="r-fee-${i}">First visit $</label><input id="r-fee-${i}" type="number" inputmode="decimal" step="any" data-chg="rate" data-i="${i}" data-k="fee" value="${esc(r.fee)}"></div>
-      <div class="f"><label class="lab" for="r-inc-${i}">Hrs included</label><input id="r-inc-${i}" type="number" inputmode="decimal" step="any" data-chg="rate" data-i="${i}" data-k="inc" value="${esc(r.inc)}"></div>
-      <div class="f"><label class="lab" for="r-rate-${i}">Per hour after $</label><input id="r-rate-${i}" type="number" inputmode="decimal" step="any" data-chg="rate" data-i="${i}" data-k="rate" value="${esc(r.rate)}"></div></div></div>`).join('')}
+      <div class="f"><label class="lab" for="r-inc-${i}">Hours incl.</label><input id="r-inc-${i}" type="number" inputmode="decimal" step="any" data-chg="rate" data-i="${i}" data-k="inc" value="${esc(r.inc)}"></div>
+      <div class="f"><label class="lab" for="r-rate-${i}">Then $/hr</label><input id="r-rate-${i}" type="number" inputmode="decimal" step="any" data-chg="rate" data-i="${i}" data-k="rate" value="${esc(r.rate)}"></div></div></div>`).join('')}
   </section>
   <section class="card"><h2 class="sec">Materials markup</h2>
     <label class="row" style="flex-wrap:nowrap"><input type="checkbox" data-chg="setBool" data-k="markupOn" ${s.markupOn?'checked':''}><span>Add a markup to materials on new jobs</span></label>
@@ -1488,6 +1624,10 @@ function todoTick(id){
 }
 const getTodo=id=>D.todos.find(x=>x.id===id);
 const A={
+  edSave:()=>{const a=document.activeElement;if(a&&a.blur)a.blur();const k=edKey();if(!edDirty(k))return;edApply(k);render();toast('Saved');},
+  edCancel:()=>{const k=edKey();edClear(k);render();toast('Changes undone');},
+  lvSave:()=>{const a=document.activeElement;if(a&&a.blur)a.blur();if(lv)edApply(lv.key);render();toast('Saved');lvGo();},
+  lvDiscard:()=>{if(lv)edClear(lv.key);render();lvGo();},
   back:()=>{if(history.length>1)history.back();else location.hash='#today';},
   syncNow:()=>{sync.err='';if(outbox.length)flush();else refresh(true);},
   refresh:()=>refresh(true),
@@ -1517,7 +1657,8 @@ const A={
   calToday:()=>{ui.calDay='';render();},
   calPick:el=>{ui.calDay=el.dataset.d;render();},
   newOn:el=>{startDraft('');draft.date=el.dataset.d;},
-  todoAdd:()=>{const t=$('#td-new').value.trim();if(!t){$('#td-new').focus();return;}const due=$('#td-due').value||'';$('#td-new').value='';$('#td-due').value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:''});setTimeout(()=>$('#td-new')?.focus(),0);},
+  todoDay:()=>{ui.tdDay=!ui.tdDay;render();if(ui.tdDay)setTimeout(()=>{const d=$('#td-due');if(d)d.focus();},0);},
+  todoAdd:()=>{const t=$('#td-new').value.trim();if(!t){$('#td-new').focus();return;}const dd=$('#td-due');const due=(dd&&dd.value)||'';$('#td-new').value='';if(dd)dd.value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:''});setTimeout(()=>$('#td-new')?.focus(),0);},
   jobTodoAdd:el=>{const t=$('#jt-new').value.trim();if(!t){$('#jt-new').focus();return;}const due=$('#jt-due').value||'';$('#jt-new').value='';$('#jt-due').value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:el.dataset.id});},
   todoTick:el=>todoTick(el.dataset.id),
   todoDel:el=>{const td=getTodo(el.dataset.id);if(!td)return;const was=clone(td);del('Todos',td.id);toast('To-do deleted',()=>put('Todos',was));},
@@ -1568,9 +1709,9 @@ const A={
   showPhotos:el=>{ui.showPhotosFor=el.dataset.id;render();},
   askConfirm:el=>{ui.confirm=el.dataset.k;render();},
   cancelConfirm:()=>{ui.confirm='';render();},
-  jobDel:el=>{const id=el.dataset.id;D.todos.filter(t=>t.jobId===id).forEach(t=>del('Todos',t.id,true));D.payments.filter(p=>p.jobId===id).forEach(p=>del('Payments',p.id,true));D.photos.filter(p=>p.jobId===id).forEach(p=>{api({action:'deletePhoto',id:p.id}).catch(()=>{});});D.photos=D.photos.filter(p=>p.jobId!==id);del('Jobs',id,true);ui.confirm='';location.hash='#jobs';toast('Job deleted');},
+  jobDel:el=>{const id=el.dataset.id;edClear('job:'+id);D.todos.filter(t=>t.jobId===id).forEach(t=>del('Todos',t.id,true));D.payments.filter(p=>p.jobId===id).forEach(p=>del('Payments',p.id,true));D.photos.filter(p=>p.jobId===id).forEach(p=>{api({action:'deletePhoto',id:p.id}).catch(()=>{});});D.photos=D.photos.filter(p=>p.jobId!==id);del('Jobs',id,true);ui.confirm='';location.hash='#jobs';toast('Job deleted');},
   custNew:()=>{const c=put('Customers',{id:uid('c'),name:'New customer',phone:'',address:'',email:'',notes:'',tags:'',source:''},true);location.hash='#customer/'+c.id;setTimeout(()=>{const i=$('#c-name');if(i){i.focus();i.select();}},50);},
-  custDel:el=>{del('Customers',el.dataset.id,true);ui.confirm='';location.hash='#customers';toast('Customer deleted');},
+  custDel:el=>{edClear('cust:'+el.dataset.id);del('Customers',el.dataset.id,true);ui.confirm='';location.hash='#customers';toast('Customer deleted');},
   mergeOpen:el=>{ui.mergeFor=el.dataset.id;render();},
   mergeCancel:()=>{ui.mergeFor='';render();},
   mergeDo:el=>{
@@ -1632,6 +1773,7 @@ const A={
     try{await api(Object.assign({action:'ticket'},t),90000);closeModal();toast('Sent. Thank you!');}
     catch(e){const P=lsGet('mhr-tickets',[]);P.push(t);lsSet('mhr-tickets',P);closeModal();toast(e.code==='offline'?'No signal. It will send when you’re back online.':'Saved. It will send in a moment.');}
   },
+  shopStore:el=>{const v=el.dataset.k;const inp=$('#sp-store');const on=(inp&&inp.value)!==v;if(inp)inp.value=on?v:'';ui.shopStore=on?v:'';document.querySelectorAll('[data-act=shopStore]').forEach(b=>b.setAttribute('aria-pressed',String(on&&b.dataset.k===v)));},
   listTab:el=>{ui.listTab=el.dataset.k;if(route().v==='lists')render();},
   shopAdd:()=>{const t=($('#sp-item').value||'').trim();if(!t){toast('Type the item first');$('#sp-item').focus();return;}
     const jobId=($('#sp-job')||{}).value||'';const j=jobId&&getJob(jobId);
@@ -1676,9 +1818,11 @@ function markSent(){
 }
 
 /* ============ events ============ */
+const NEEDSAVE=['msgJob','msgCust','invoiceSend','setStatus','payOpen','finishOpen','quickStatus','reschedOpen','unschedule','moveJob','mergeOpen','exportXlsx','changeConn','disconnect','shareBA'];
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;
   if(el.tagName==='BUTTON')e.preventDefault();
+  if(NEEDSAVE.includes(el.dataset.act)&&edDirty(edKey())&&el.closest('main')){lv={key:edKey(),act:el.dataset.act,ds:Object.assign({},el.dataset)};renderLeave();return;}
   if(el.tagName==='DETAILS'){setTimeout(()=>f(el,e),0);return;}
   f(el,e);
 });
@@ -1711,13 +1855,13 @@ document.addEventListener('change',e=>{
   const k=el.dataset.chg;if(!k)return;
   if(k==='status'){A.setStatus({dataset:{id:el.dataset.id,k:el.value}});return;}
   const v=el.dataset.num?(el.value===''?'':num(el.value)):el.value.trim();
-  if(k==='job'){const j=getJob(el.dataset.id);if(!j)return;const ch={[el.dataset.k]:v};
-    if(el.dataset.k==='priceType'&&String(v).startsWith('rate:')){const r=(S().rates||[])[num(v.split(':')[1])];if(!r)return;Object.assign(ch,{priceType:'hourly',serviceFee:num(r.fee),includedHours:num(r.inc),hourlyRate:num(r.rate)});}if(el.dataset.k==='date'&&v&&WAITING.includes(j.status))ch.status='scheduled';put('Jobs',Object.assign({},j,ch));}
-  else if(k==='cust'){const c=getCust(el.dataset.id);if(!c)return;put('Customers',Object.assign({},c,{[el.dataset.k]:v}));}
-  else if(k==='rate'){const i=num(el.dataset.i);const r=Object.assign({},D.settings.rates[i]);r[el.dataset.k]=el.dataset.k==='name'?v:num(v);D.settings.rates=D.settings.rates.map((x,n)=>n===i?r:x);saveSettings();}
-  else if(k==='defRate'){D.settings.defaultRate=num(el.value);saveSettings();}
-  else if(k==='setBool'){D.settings[el.dataset.k]=el.checked;saveSettings();}
-  else if(k==='set'){const nk=['serviceFee','includedHours','hourlyRate','monthlyGoal','markupPct','markupFlat'].includes(el.dataset.k);D.settings[el.dataset.k]=nk?num(v):v;saveSettings();}
+  if(k==='job'){const j0=getJob(el.dataset.id);if(!j0)return;const ek='job:'+j0.id;const j=Object.assign({},j0,ED[ek]||{});const ch={[el.dataset.k]:v};
+    if(el.dataset.k==='priceType'&&String(v).startsWith('rate:')){const r=(S().rates||[])[num(v.split(':')[1])];if(!r)return;Object.assign(ch,{priceType:'hourly',serviceFee:num(r.fee),includedHours:num(r.inc),hourlyRate:num(r.rate)});}if(el.dataset.k==='date'&&v&&WAITING.includes(j.status))ch.status='scheduled';edPut(ek,ch);render();}
+  else if(k==='cust'){const c=getCust(el.dataset.id);if(!c)return;edPut('cust:'+c.id,{[el.dataset.k]:v});render();}
+  else if(k==='rate'){const i=num(el.dataset.i);const cur=edSet();const r=Object.assign({},(cur.rates||[])[i]);r[el.dataset.k]=el.dataset.k==='name'?v:num(v);edPut('set',{rates:(cur.rates||[]).map((x,n)=>n===i?r:x)});render();}
+  else if(k==='defRate'){edPut('set',{defaultRate:num(el.value)});render();}
+  else if(k==='setBool'){edPut('set',{[el.dataset.k]:el.checked});render();}
+  else if(k==='set'){const nk=['serviceFee','includedHours','hourlyRate','monthlyGoal','markupPct','markupFlat'].includes(el.dataset.k);edPut('set',{[el.dataset.k]:nk?num(v):v});render();}
   else if(k==='custSort'){ui.custSort=el.value;$('#cust-list').innerHTML=custRows();}
 });
 document.addEventListener('keydown',e=>{
@@ -1726,7 +1870,7 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='sp-price'){e.preventDefault();A.shopBought({dataset:{id:ui.pricing}});}
   if(e.key==='Enter'&&e.target.id==='jt-new'){e.preventDefault();A.jobTodoAdd({dataset:{id:route().id}});}
   if(e.key==='Enter'&&(e.target.id==='su-pass'||e.target.id==='su-url')){e.preventDefault();A.connect();}
-  if(e.key==='Escape'&&(msg||fin||qk||rs||tk))closeModal();
+  if(e.key==='Escape'&&(msg||fin||qk||rs||tk||lv))closeModal();
 });
 document.addEventListener('focusout',e=>{const el=e.target;if(el&&el.dataset&&el.dataset.dirty&&el.dataset.chg){delete el.dataset.dirty;el.dispatchEvent(new Event('change',{bubbles:true}));}},true);
 document.addEventListener('change',e=>{if(e.target&&e.target.dataset)delete e.target.dataset.dirty;},true);
