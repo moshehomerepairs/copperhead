@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Copperhead Inc</title>
-<meta name="theme-color" content="#EFEBEC">
+<meta name="theme-color" content="#245F8F">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="mhr-icon-192.png">
 <link rel="apple-touch-icon" href="mhr-icon-180.png">
@@ -14,26 +14,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <style>
 /* Layout: phone-first app shell — sticky top bar, one scrolling page, bottom tab bar, floating "+ Job" button */
 :root{
-  /* Moshe Home Repairs brand: linen, stone, olive, charcoal. Status colors are strong on purpose so they're easy to tell apart. */
-  --bg:#EFEBEC; --surface:#FFFFFF; --sunk:#E4E1E0; --line:#DAD5D3;
-  --ink:#3D3B3A; --muted:#625D57; --accent:#675F4C; --accent-ink:#FFFFFF; --accent-soft:#E7E2D7;
-  --good:#2C6B38; --good-soft:#CDE8CF; --warn:#7A5200; --warn-soft:#FBE3A0; --danger:#A3271A; --danger-soft:#F8CFC8;
-  --orange:#933C08; --orange-soft:#FBD2B2; --teal:#0C5E68; --teal-soft:#C3E6EA;
-  --blue:#1B5C98; --blue-soft:#D3E5F8;
-  --display:"Playfair Display",Georgia,"Times New Roman",serif;
-  --body:"Montserrat","Helvetica Neue",Arial,sans-serif;
+  /* original Copperhead look (she prefers it) */
+  --bg:#F2F3EE; --surface:#FFFFFF; --sunk:#E7E9E2; --line:#D2D6CC;
+  --ink:#1D2220; --muted:#596560; --accent:#245F8F; --accent-ink:#FFFFFF; --accent-soft:#DCE7F2;
+  --good:#2B6A4C; --good-soft:#D9EADF; --warn:#9A620E; --warn-soft:#F6E9C8; --danger:#AE3F2B; --danger-soft:#F5DDD7;
+  --orange:#B4530F; --orange-soft:#F8E1CF; --teal:#13707A; --teal-soft:#D3ECEE;
+  --blue:#245F8F; --blue-soft:#DCE7F2;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:12px; --nav:64px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){input,select,textarea{border-color:var(--line)!important}:root{
-  --bg:#1C1A19; --surface:#262321; --sunk:#312D2A; --line:#3E3A36;
-  --ink:#EFEBEC; --muted:#B3ACA4; --accent:#C9BFA4; --accent-ink:#1C1A19; --accent-soft:#3A3529;
-  --blue:#8DBDF0; --blue-soft:#1C3350;
+  --bg:#121514; --surface:#1A1E1D; --sunk:#242927; --line:#323936;
+  --ink:#E4E9E6; --muted:#9AA5A0; --accent:#86B6E3; --accent-ink:#0C1724; --accent-soft:#1E2F42;
+  --blue:#86B6E3; --blue-soft:#1E2F42;
   --good:#74C49A; --good-soft:#1F3B2C; --warn:#E2AA55; --warn-soft:#3A2E18; --danger:#E9856F; --danger-soft:#3E231D;
   --orange:#F0A060; --orange-soft:#3D2716; --teal:#6CC6CF; --teal-soft:#16343A;
   color-scheme:dark;
@@ -64,7 +64,7 @@ main{max-width:760px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-rig
 h2.sec,h3.sec{font-family:var(--display);font-weight:700;font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase;margin:0}
 .muted{color:var(--muted)} .small{font-size:.86rem} .m0{margin:0}
 .empty{margin:0;color:var(--muted)}
-label.lab,legend{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+label.lab,span.lab,legend{font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px 11px;width:100%;min-width:0;font-size:16px}
 textarea{resize:vertical;line-height:1.4}
 input[type=checkbox]{width:24px;height:24px;accent-color:var(--good);padding:0;flex-shrink:0;cursor:pointer}
@@ -180,7 +180,7 @@ details>summary{cursor:pointer;color:var(--muted);font-weight:600}
 .next .when{font-size:.85rem;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
 .next .who{font-family:var(--display);font-weight:700;font-size:1.6rem;line-height:1.1;color:inherit;text-decoration:none}
 .next .big{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.next .big .btn{min-height:52px;font-size:1rem}
+.next .big .btn{min-height:52px;font-size:1rem;white-space:nowrap}
 .btn svg{width:20px;height:20px;flex-shrink:0}
 .quick .btn svg{width:22px;height:22px}
 .sheet .sec-top{flex-wrap:nowrap}
@@ -219,32 +219,16 @@ details>summary{cursor:pointer;color:var(--muted);font-weight:600}
 .fin-total b{font-family:var(--display);font-size:1.8rem}
 .err{color:var(--danger);margin:0}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
-/* ---- 1.9: brand look ---- */
-:root{--r:4px}
-body{font-size:15.5px}
-.top{border-bottom:1.5px solid var(--accent)}
-.top h1{font-family:var(--display);text-transform:none;letter-spacing:0;font-size:1.5rem}
+/* ---- 1.9+ additions on the original look ---- */
 .top .tt{flex:1;min-width:0;display:flex;flex-direction:column}
 .top .tt h1{flex:none}
 .top .tt span{font-size:.86rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.logo{width:32px;height:29px;flex-shrink:0}
-a{color:var(--accent)}
-h2.sec,h3.sec{font-family:var(--display);text-transform:none;letter-spacing:0;font-size:1.22rem}
 h2.sec svg{width:20px;height:20px;vertical-align:-3px;margin-right:4px}
-label.lab,legend,.qk-row > span{text-transform:none;letter-spacing:0;font-size:.84rem}
-.pill{text-transform:none;letter-spacing:0;font-size:.76rem;font-weight:700;border-radius:3px;padding:3px 8px}
-.st-new{background:var(--blue-soft);color:var(--blue)}
-.st-waiting{background:var(--warn-soft);color:var(--warn)}
-.st-followup{background:var(--orange-soft);color:var(--orange)}
-.st-scheduled{background:var(--teal-soft);color:var(--teal)}
-.st-done{background:var(--good-soft);color:var(--good)}
-.st-unpaid{background:var(--danger-soft);color:var(--danger)}
-.st-paid{background:var(--sunk);color:var(--muted)}
-.pill.st-check{background:var(--warn-soft);color:var(--warn)}
+.mic svg,.btn svg{width:20px;height:20px}
 /* waiting list: each group has its own color */
 .wl{border-top:5px solid var(--c);}
 .wl h2.sec{color:var(--c)}
-.wl .cnt{background:var(--cs);color:var(--c);font-weight:700;border-radius:3px;padding:2px 9px;font-size:.85rem}
+.wl .cnt{background:var(--cs);color:var(--c);font-weight:700;border-radius:6px;padding:2px 9px;font-size:.85rem}
 .wl-followup{--c:var(--orange);--cs:var(--orange-soft)}
 .wl-waiting{--c:var(--warn);--cs:var(--warn-soft)}
 .wl-new{--c:var(--blue);--cs:var(--blue-soft)}
@@ -252,18 +236,6 @@ label.lab,legend,.qk-row > span{text-transform:none;letter-spacing:0;font-size:.
 /* the tab you're on lights up */
 .nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)!important;box-shadow:inset 0 3px 0 var(--ink)}
 .nav a[aria-current="page"] .dot{background:var(--accent-ink)!important;color:var(--accent)}
-.thumb .tag{text-transform:none}
-.btn,.chip,.seg,.seg button,.x,.match,.qk-prev,.qk-count,.cust-box,.tile,.note,input,select,textarea,.wk button,.month .day,.thumb,.back,.gear{border-radius:3px}
-.card,.next{border-radius:4px}
-.next{border-width:1.5px}
-.btn.g{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.tile b,.fin-total b{font-family:var(--body);font-weight:700}
-.next .who{font-family:var(--display)}
-.next .when{text-transform:none;letter-spacing:0;font-weight:700}
-.sheet{border-radius:10px 10px 0 0}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:none}
-.brand{text-transform:none;font-size:2rem}
-.mic svg,.btn svg{width:20px;height:20px}
 /* Quick add + New job: a strip above the tabs (never covers the page) */
 .acts{position:fixed;z-index:21;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px))}
 .acts[hidden]{display:none}
@@ -275,6 +247,7 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
 .nav .side-brand,.nav .side-acts{display:none}
 .item.cur{background:var(--accent-soft);margin:0 -14px;padding-left:14px;padding-right:14px}
 .pick{color:var(--muted);text-align:center;padding:40px 10px}
+.hm input{width:90px;flex:0 0 90px;text-align:center;font-size:1.05rem}
 .sugs{display:flex;flex-direction:column;gap:2px}
 .sugs:empty{display:none}
 .sug{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:left;padding:10px;border-radius:3px;display:flex;gap:8px;align-items:center;font:inherit;font-size:.92rem;cursor:pointer;min-height:44px}
@@ -322,7 +295,7 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
 <script>
 (function(){
 "use strict";
-const VERSION='1.10.0';
+const VERSION='1.10.1';
 const errLog=[];const trail=[];
 window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
 window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
@@ -360,13 +333,7 @@ const mapsLink=a=>`https://www.google.com/maps/search/?api=1&query=${encodeURICo
 const addrLink=a=>a?`<a href="${esc(mapsLink(a))}" target="_blank" rel="noopener">${esc(a)}</a>`:'';
 /* phone numbers: 7735550123 -> 773-555-0123 (anything starting with + is left alone) */
 function fmtPhone(v){const raw=String(v||'');if(/^\s*\+/.test(raw))return raw.trim();let d=raw.replace(/\D/g,'');let pre='';if(d.length>10&&d[0]==='1'){pre='1-';d=d.slice(1);}if(d.length>10)return raw.trim();if(d.length<4)return pre+d;if(d.length<7)return pre+d.slice(0,3)+'-'+d.slice(3);return pre+d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);}
-/* free address suggestions (OpenStreetMap, via photon.komoot.io), near Chicago */
-const ADDR_IDS=['c-addr','nc-addr'];let addrT=null,addrSeq=0;
-function fmtAddr(p,q){const num=p.housenumber||((p.street&&/^\d+/.test(q))?q.match(/^\d+/)[0]:'');const street=[num,p.street||(num?'':p.name)].filter(Boolean).join(' ');const city=p.city||p.town||p.village||p.district||'';const st=p.state==='Illinois'?'IL':(p.state||'');return [street,city,[st,p.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');}
-function addrSuggest(el){clearTimeout(addrT);const q=el.value.trim();const box=document.getElementById(el.id+'-sug');if(!box)return;if(q.length<5||el.dataset.picked===el.value){box.innerHTML='';return;}
-  addrT=setTimeout(async()=>{const seq=++addrSeq;try{const r=await fetch('https://photon.komoot.io/api/?'+new URLSearchParams({q,limit:'6',lat:'41.99',lon:'-87.70',lang:'en'}));const js=await r.json();if(seq!==addrSeq)return;
-    const L=[...new Set((js.features||[]).map(f=>f.properties||{}).filter(p=>(p.countrycode||'').toUpperCase()==='US').map(p=>fmtAddr(p,q)).filter(a=>a&&a.length>5))].slice(0,5);
-    const b=document.getElementById(el.id+'-sug');if(b)b.innerHTML=L.map(a=>`<button type="button" class="sug" data-act="addrPick" data-for="${el.id}" data-v="${esc(a)}">${ICON.map}<span>${esc(a)}</span></button>`).join('');}catch(e){}},350);}
+
 const normName=n=>String(n||'').toLowerCase().replace(/^(rabbi|mrs?\.?|ms\.?|dr\.?)\s+/,'').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
 const isTyping=el=>!!el&&(el.tagName==='TEXTAREA'||el.tagName==='SELECT'||(el.tagName==='INPUT'&&!['checkbox','radio','button','submit','file'].includes(el.type)));
 
@@ -872,7 +839,7 @@ function renderFinish(){
     <div class="sec-top"><h2 class="sec" id="fin-h">Finish: ${esc(j.title||'job')}</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
     <div class="grid2">
       ${flat?`<div class="f"><label class="lab" for="fin-flat">Price for labor ($)</label><input id="fin-flat" data-fin="flat" type="number" min="0" step="5" inputmode="decimal" value="${esc(fin.flat)}"></div>`:''}
-      <div class="f"><span class="lab">Time worked</span><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="fin-hwh" data-fin="hwh" type="number" min="0" step="1" inputmode="numeric" value="${esc(fin.hwh)}" aria-label="Hours worked" placeholder="0"><span class="small muted">hr</span><input id="fin-hwm" data-fin="hwm" type="number" min="0" max="59" step="5" inputmode="numeric" value="${esc(fin.hwm)}" aria-label="Minutes worked" placeholder="0"><span class="small muted">min</span></div></div>
+      <div class="f full hm"><span class="lab">Time worked</span><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="fin-hwh" data-fin="hwh" type="number" min="0" step="1" inputmode="numeric" value="${esc(fin.hwh)}" aria-label="Hours worked" placeholder="0"><span class="small muted">hr</span><input id="fin-hwm" data-fin="hwm" type="number" min="0" max="59" step="5" inputmode="numeric" value="${esc(fin.hwm)}" aria-label="Minutes worked" placeholder="0"><span class="small muted">min</span></div></div>
       <div class="f"><label class="lab" for="fin-mat">${mk?'Materials cost ($)':'Materials ($)'}</label><input id="fin-mat" data-fin="mat" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(fin.mat)}"></div>
       ${mk?`<div class="f"><label class="lab" for="fin-mup">Markup %</label><input id="fin-mup" data-fin="mup" type="number" min="0" step="1" inputmode="decimal" value="${esc(fin.mup)}"></div><div class="f"><label class="lab" for="fin-mupf">Markup $</label><input id="fin-mupf" data-fin="mupf" type="number" min="0" step="1" inputmode="decimal" value="${esc(fin.mupf)}"></div>`:''}
     </div>
@@ -1097,7 +1064,7 @@ function renderTop(){
   else if(outbox.length&&sync.err){cls='err';txt='Not saved · retry';}
   else if(outbox.length){cls='wait';txt='Saving…';}
   else if(sync.err==='offline'){cls='wait';txt='Offline';}
-  $('#topbar').innerHTML=`${back?'<button class="back" data-act="back" aria-label="Back">‹</button>':(conn?'<img class="logo" src="mark.png" alt="">':'')}${sub?`<div class="tt"><h1>${esc(title)}</h1><span>${esc(sub)}</span></div>`:`<h1>${esc(title)}</h1>`}${txt?`<button class="sync ${cls}" data-act="syncNow">${esc(txt)}</button>`:''}${conn&&r.v!=='settings'?`<a class="gear" href="#settings" aria-label="Settings">${ICON.settings}</a>`:''}`;
+  $('#topbar').innerHTML=`${back?'<button class="back" data-act="back" aria-label="Back">‹</button>':''}${sub?`<div class="tt"><h1>${esc(title)}</h1><span>${esc(sub)}</span></div>`:`<h1>${esc(title)}</h1>`}${txt?`<button class="sync ${cls}" data-act="syncNow">${esc(txt)}</button>`:''}${conn&&r.v!=='settings'?`<a class="gear" href="#settings" aria-label="Settings">${ICON.settings}</a>`:''}`;
 }
 function renderNav(){
   const r=route();const nav=$('#nav');if(!conn){nav.hidden=true;$('#acts').hidden=true;document.body.classList.remove('has-acts');return;}
@@ -1198,9 +1165,9 @@ function viewToday(){
   const hero=nx?`<section class="next"><span class="when">${nxLater?'Next job · '+fmtDate(nx.date):'Next up'}${nx.time?' · '+fmtTime(nx.time):''}</span>
     <a class="who" href="#job/${nx.id}">${esc(nc.name||'No customer')}</a>
     <span>${esc(nx.title||'')}${nc.address?`<br><span class="small">${addrLink(nc.address)}</span>`:''}</span>
-    <div class="big">${nc.address?`<a class="btn p" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nc.address)}" target="_blank" rel="noopener">${ICON.map} Navigate</a>`:`<a class="btn" href="#job/${nx.id}">Open job</a>`}
+    <div class="big">${nc.address?`<a class="btn p" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nc.address)}" target="_blank" rel="noopener">${ICON.map} Navigate</a>`:`<a class="btn" href="#job/${nx.id}">${ICON.jobs} Open job</a>`}
       ${nc.phone?`<a class="btn" href="tel:${esc(telNum(nc.phone))}">${ICON.call} Call</a>`:`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="confirm">${ICON.text} Message</button>`}
-      ${nxLater?`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="${nx.date===tm?'remind':'confirm'}">${ICON.text} ${nx.date===tm?'Reminder':'Confirm time'}</button>`:`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="omw">${ICON.text} On my way</button>`}
+      ${nxLater?`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="${nx.date===tm?'remind':'confirm'}">${ICON.text} ${nx.date===tm?'Reminder':'Confirm'}</button>`:`<button class="btn" data-act="msgJob" data-id="${nx.id}" data-k="omw">${ICON.text} On my way</button>`}
       <button class="btn g" data-act="finishOpen" data-id="${nx.id}">${ICON.check} Finish job</button></div></section>`:'';
   const se=sukkahSeason();const sk=(S().sukkahOn!==false&&t>=se.show&&t<=se.until)?sukkahList().todo.length:0;
   const unsaved=Object.keys(ED).filter(edDirty).map(k=>k==='set'?['#settings','Settings']:k.startsWith('job:')?['#job/'+k.slice(4),custName((getJob(k.slice(4))||{}).customerId)+' (job)']:['#customer/'+k.slice(5),(getCust(k.slice(5))||{}).name||'Customer']);
@@ -1324,7 +1291,7 @@ function viewWaiting(){
   const by=g=>W.filter(j=>key(j)===g).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
   if(!W.length)return '<p class="empty">The waiting list is empty. New requests you add with “+ Job” show up here until you give them a date.</p>';
   return `<p class="muted small m0">${W.length} request${W.length===1?'':'s'} not on the schedule yet. Open one and pick a date to schedule it.</p>
-  ${groups.map(([g,l])=>{const L=by(g);return L.length?`<section class="card wl wl-${g}"><div class="sec-top"><h2 class="sec">${l}</h2><span class="cnt">${L.length}</span></div><div class="list">${L.map(j=>jobLine(j,{sub:'',noPill:true,right:j.notes&&/slotted/i.test(j.notes)?`<span class="small muted">${esc(j.notes.replace(/ \(from old waiting list\)\./,'').replace(/^Slotted (into|in for) /,''))}</span>`:''})).join('')}</div></section>`:'';}).join('')}`;
+  ${groups.map(([g,l])=>{const L=by(g);return L.length?`<section class="card wl wl-${g}"><div class="sec-top"><h2 class="sec">${l}</h2><span class="cnt">${L.length}</span></div><div class="list">${L.map(j=>jobLine(j,{sub:'',right:j.notes&&/slotted/i.test(j.notes)?`<span class="small muted">${esc(j.notes.replace(/ \(from old waiting list\)\./,'').replace(/^Slotted (into|in for) /,''))}</span>`:''})).join('')}</div></section>`:'';}).join('')}`;
 }
 
 /* ---------- jobs ---------- */
@@ -1372,7 +1339,7 @@ function viewNew(){
       <div class="f full"><label class="lab" for="nc-name">Name</label><input id="nc-name" data-inp="draft" data-k="name" value="${esc(d.name)}" autocomplete="off"></div>
       <div class="f"><label class="lab" for="nc-phone">Phone</label><input id="nc-phone" type="tel" data-inp="draft" data-k="phone" value="${esc(d.phone)}"></div>
       <div class="f"><label class="lab" for="nc-source">How they found you</label><select id="nc-source" data-inp="draft" data-k="source"><option value="">Choose…</option>${SOURCES.map(s=>`<option ${d.source===s?'selected':''}>${s}</option>`).join('')}</select></div>
-      <div class="f full"><label class="lab" for="nc-addr">Address</label><input id="nc-addr" data-inp="draft" data-k="address" value="${esc(d.address)}" autocomplete="off" placeholder="Start typing, then pick"><div class="sugs" id="nc-addr-sug"></div></div>
+      <div class="f full"><label class="lab" for="nc-addr">Address</label><input id="nc-addr" data-inp="draft" data-k="address" value="${esc(d.address)}"></div>
       <div class="f full"><label class="lab" for="nc-email">Email (optional)</label><input id="nc-email" type="email" data-inp="draft" data-k="email" value="${esc(d.email)}"></div></div>
       <div id="dup-hint">${dup?`<p class="note warn">This looks like <b>${esc(dup.name)}</b>, who’s already a customer. <button class="btn sm" data-act="draftPick" data-id="${dup.id}">Use ${esc(first(dup.name))}</button></p>`:''}</div>
       <div><button class="btn ghost sm" data-act="draftChangeCust">Search existing customers instead</button></div>`;
@@ -1386,9 +1353,9 @@ function viewNew(){
     <div class="f"><label class="lab" for="nj-title">What needs doing</label><input id="nj-title" data-inp="draft" data-k="title" value="${esc(d.title)}" placeholder="e.g. Fix sticking back door"></div>
     <div class="f"><label class="lab" for="nj-desc">Details (optional)</label><textarea id="nj-desc" rows="2" data-inp="draft" data-k="description">${esc(d.description)}</textarea></div>
     <div class="f"><label class="lab" for="nj-status">Status</label><select id="nj-status" data-inp="draft" data-k="status">${STATUSES.filter(s=>!['paid','cancelled','unpaid'].includes(s[0])).map(([k,l])=>`<option value="${k}" ${d.status===k?'selected':''}>${l}</option>`).join('')}</select></div>
-    <div class="grid3"><div class="f"><label class="lab" for="nj-date">Date</label><input id="nj-date" type="date" data-inp="draft" data-k="date" value="${esc(d.date)}"></div>
+    <div class="grid2"><div class="f full"><label class="lab" for="nj-date">Day</label><input id="nj-date" type="date" data-inp="draft" data-k="date" value="${esc(d.date)}"></div>
       <div class="f"><label class="lab" for="nj-time">Time</label><input id="nj-time" type="time" data-inp="draft" data-k="time" value="${esc(d.time)}"></div>
-      <div class="f"><label class="lab" for="nj-hours">Est. hours</label><input id="nj-hours" type="number" step="0.5" min="0" inputmode="decimal" data-inp="draft" data-k="hours" value="${esc(d.hours)}"></div></div>
+      <div class="f"><label class="lab" for="nj-hours">Expected time (hours)</label><input id="nj-hours" type="number" step="0.5" min="0" inputmode="decimal" data-inp="draft" data-k="hours" value="${esc(d.hours)}"></div></div>
     <div class="f"><label class="lab" for="nj-ptype">Price</label><select id="nj-ptype" data-inp="draft" data-k="priceType">${rateList().map(r=>`<option value="rate:${r.i}" ${d.priceType==='rate:'+r.i?'selected':''}>${esc(rateText(r))}</option>`).join('')}<option value="flat" ${d.priceType==='flat'?'selected':''}>Set price</option></select></div>
     ${d.priceType==='flat'?`<div class="f"><label class="lab" for="nj-flat">Set price for labor ($)</label><input id="nj-flat" type="number" min="0" step="5" inputmode="decimal" data-inp="draft" data-k="flatPrice" value="${esc(d.flatPrice)}"></div>`:''}
     <div class="f"><label class="lab" for="nj-todo">First to-do (optional)</label><input id="nj-todo" data-inp="draft" data-k="todo" value="${esc(d.todo)}" placeholder="e.g. Buy door hinges"></div>
@@ -1464,7 +1431,7 @@ function viewJob(id){
     <div class="f"><label class="lab" for="j-desc">Details</label><textarea id="j-desc" rows="2" data-chg="job" data-id="${j.id}" data-k="description">${esc(j.description)}</textarea></div>
     <div class="grid2"><div class="f full"><label class="lab" for="j-date">Day</label><input id="j-date" type="date" data-chg="job" data-id="${j.id}" data-k="date" value="${esc(j.date)}"></div>
       <div class="f"><label class="lab" for="j-time">Time</label><input id="j-time" type="time" data-chg="job" data-id="${j.id}" data-k="time" value="${esc(j.time)}"></div>
-      <div class="f"><label class="lab" for="j-hours">Hours (guess)</label><input id="j-hours" type="number" step="0.5" min="0" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="hours" value="${esc(j.hours)}"></div></div>
+      <div class="f"><label class="lab" for="j-hours">Expected time (hours)</label><input id="j-hours" type="number" step="0.5" min="0" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="hours" value="${esc(j.hours)}"></div></div>
     ${j.date?`<div class="row">${g?`<a class="btn sm" href="${esc(g)}" target="_blank" rel="noopener">Add to Google Calendar</a>`:''}<button class="btn sm" data-act="unschedule" data-id="${j.id}">Take off the schedule</button></div>`:''}
     <div class="f"><label class="lab" for="j-notes">Private notes</label><textarea id="j-notes" rows="2" data-chg="job" data-id="${j.id}" data-k="notes" placeholder="Only you see these">${esc(j.notes)}</textarea></div>
   </section>
@@ -1474,7 +1441,8 @@ function viewJob(id){
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">To-dos</h2></div>
     ${tds.length?`<div class="list">${tds.map(todoRow).join('')}</div>`:''}
-    <div class="row" style="flex-wrap:nowrap"><input id="jt-new" placeholder="Add a to-do for this job" aria-label="New to-do"><input id="jt-due" type="date" style="max-width:150px" aria-label="Due date"><button class="btn p" data-act="jobTodoAdd" data-id="${j.id}" aria-label="Add">+</button></div>
+    <div class="row" style="flex-wrap:nowrap"><input id="jt-new" placeholder="What needs doing for this job?" aria-label="New to-do"><button class="btn p" data-act="jobTodoAdd" data-id="${j.id}">Add</button></div>
+    ${ui.tdDay?`<div class="row" style="flex-wrap:nowrap"><label class="lab" for="jt-due" style="white-space:nowrap">Day</label><input id="jt-due" type="date" style="max-width:190px"><button class="btn ghost sm" data-act="todoDay">No day</button></div>`:`<div><button class="btn sm" data-act="todoDay">${ICON.cal} Add a day (optional)</button></div>`}
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">Photos</h2><span class="small muted">${ph.length}</span></div>
     <div class="row"><label class="btn wide" for="ph-before">${ICON.cam} Before</label><input id="ph-before" type="file" accept="image/*" capture="environment" hidden data-photo="before" data-id="${j.id}">
@@ -1486,13 +1454,14 @@ function viewJob(id){
   </section>
   <section class="card"><h2 class="sec">Price &amp; payment</h2>
     <div class="f"><label class="lab" for="j-ptype">Price</label><select id="j-ptype" data-chg="job" data-id="${j.id}" data-k="priceType"><option value="hourly" ${j.priceType!=='flat'?'selected':''}>Hourly: ${money0(num(j.serviceFee))} first ${num(j.includedHours)} hr, then ${money0(num(j.hourlyRate))}/hr</option>${rateList().filter(r=>!(j.priceType!=='flat'&&num(r.fee)===num(j.serviceFee)&&num(r.rate)===num(j.hourlyRate)&&num(r.inc)===num(j.includedHours))).map(r=>`<option value="rate:${r.i}">Switch to ${esc(rateText(r))}</option>`).join('')}<option value="flat" ${j.priceType==='flat'?'selected':''}>Set price</option></select></div>
+    ${(()=>{const hm=hmSplit(j.hoursWorked);return `<div class="f hm"><span class="lab">Time worked</span><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="j-hwh" type="number" min="0" step="1" inputmode="numeric" data-chg="jobhm" data-id="${j.id}" value="${esc(hm.h)}" aria-label="Hours worked" placeholder="0"><span class="small muted">hr</span><input id="j-hwm" type="number" min="0" max="59" step="5" inputmode="numeric" data-chg="jobhm" data-id="${j.id}" value="${esc(hm.m)}" aria-label="Minutes worked" placeholder="0"><span class="small muted">min</span></div></div>`;})()}
     <div class="grid3">
       ${j.priceType==='flat'?`<div class="f"><label class="lab" for="j-flat">Labor ($)</label><input id="j-flat" type="number" min="0" step="5" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="flatPrice" data-num="1" value="${esc(j.flatPrice)}"></div>`:''}
-      ${(()=>{const hm=hmSplit(j.hoursWorked);return `<div class="f"><span class="lab">Time worked</span><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="j-hwh" type="number" min="0" step="1" inputmode="numeric" data-chg="jobhm" data-id="${j.id}" value="${esc(hm.h)}" aria-label="Hours worked" placeholder="0"><span class="small muted">hr</span><input id="j-hwm" type="number" min="0" max="59" step="5" inputmode="numeric" data-chg="jobhm" data-id="${j.id}" value="${esc(hm.m)}" aria-label="Minutes worked" placeholder="0"><span class="small muted">min</span></div></div>`;})()}
+
       <div class="f"><label class="lab" for="j-mat">${S().markupOn||num(j.matMarkup)>0||num(j.matMarkupFlat)>0?'Materials cost ($)':'Materials ($)'}</label><input id="j-mat" type="number" min="0" step="0.01" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="materials" data-num="1" value="${esc(j.materials)}"></div>
       ${S().markupOn||num(j.matMarkup)>0||num(j.matMarkupFlat)>0?`<div class="f"><label class="lab" for="j-mup">Markup %</label><input id="j-mup" type="number" min="0" step="1" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="matMarkup" data-num="1" value="${esc(j.matMarkup)}"></div><div class="f"><label class="lab" for="j-mupf">Markup $</label><input id="j-mupf" type="number" min="0" step="1" inputmode="decimal" data-chg="job" data-id="${j.id}" data-k="matMarkupFlat" data-num="1" value="${esc(j.matMarkupFlat)}"></div>`:''}
     </div>
-    <div class="money"><span>Labor</span><span>${money(t.labor)}</span>${t.mat?`<span>Materials${t.mup?` <span class="small muted">(${money(t.matCost)}${num(j.matMarkup)?' + '+num(j.matMarkup)+'%':''}${num(j.matMarkupFlat)?' + '+money0(num(j.matMarkupFlat)):''})</span>`:''}</span><span>${money(t.mat)}</span>`:''}${t.ru?`<span>Rounded up</span><span>${money(t.ru)}</span>`:''}<span class="tot">Total</span><span class="tot">${money(t.total)}</span>${paid?`<span>Paid</span><span class="good">${money(paid)}</span>`:''}<span class="bal">Balance</span><span class="bal ${bal>0&&['done','unpaid'].includes(j.status)?'bad':''}">${money(bal)}</span></div>
+    <div class="money">${num(j.hoursWorked)>0?`<span>Time worked</span><span>${fmtHM(j.hoursWorked)}</span>`:''}<span>Labor</span><span>${money(t.labor)}</span>${t.mat?`<span>Materials${t.mup?` <span class="small muted">(${money(t.matCost)}${num(j.matMarkup)?' + '+num(j.matMarkup)+'%':''}${num(j.matMarkupFlat)?' + '+money0(num(j.matMarkupFlat)):''})</span>`:''}</span><span>${money(t.mat)}</span>`:''}${t.ru?`<span>Rounded up</span><span>${money(t.ru)}</span>`:''}<span class="tot">Total</span><span class="tot">${money(t.total)}</span>${paid?`<span>Paid</span><span class="good">${money(paid)}</span>`:''}<span class="bal">Balance</span><span class="bal ${bal>0&&['done','unpaid'].includes(j.status)?'bad':''}">${money(bal)}</span></div>
     ${t.ru||(t.base>0&&Math.abs(t.base-Math.round(t.base))>0.004)?`<div><button class="btn sm" data-act="roundUp" data-id="${j.id}">${t.ru?'Undo round up':'Round up to '+money(Math.ceil(t.base-0.005))}</button></div>`:''}
     ${j.priceType==='flat'&&num(j.hoursWorked)>0&&t.labor?`<p class="muted small m0">${money0(t.labor/num(j.hoursWorked))} per hour for this job.</p>`:''}
     ${pays.length?`<div class="list">${pays.map(p=>`<div class="item"><span class="l"><b>${money(p.amount)} · ${esc(p.method||'')}</b><span>${esc(fmtDateY(p.date))}${p.note?' · '+esc(p.note):''}</span></span><button class="x" data-act="payDel" data-id="${p.id}" aria-label="Delete payment">×</button></div>`).join('')}</div>`:''}
@@ -1560,7 +1529,7 @@ function viewCustomer(id){
       <div class="f full"><label class="lab" for="c-name">Name</label><input id="c-name" data-chg="cust" data-id="${c.id}" data-k="name" value="${esc(c.name)}"></div>
       <div class="f"><label class="lab" for="c-phone">Phone</label><input id="c-phone" type="tel" data-chg="cust" data-id="${c.id}" data-k="phone" value="${esc(c.phone)}"></div>
       <div class="f"><label class="lab" for="c-phone2">Other phone</label><input id="c-phone2" type="tel" data-chg="cust" data-id="${c.id}" data-k="phone2" value="${esc(c.phone2)}"></div>
-      <div class="f full"><label class="lab" for="c-addr">Address</label><input id="c-addr" data-chg="cust" data-id="${c.id}" data-k="address" value="${esc(c.address)}" autocomplete="off" placeholder="Start typing, then pick"><div class="sugs" id="c-addr-sug"></div>${c.address?`<span class="small">${addrLink(c.address)}</span>`:''}</div>
+      <div class="f full"><label class="lab" for="c-addr">Address</label><input id="c-addr" data-chg="cust" data-id="${c.id}" data-k="address" value="${esc(c.address)}">${c.address?`<span class="small">${addrLink(c.address)}</span>`:''}</div>
       <div class="f full"><label class="lab" for="c-email">Email</label><input id="c-email" type="email" data-chg="cust" data-id="${c.id}" data-k="email" value="${esc(c.email)}"></div>
       <div class="f full"><label class="lab" for="c-notes">Notes</label><textarea id="c-notes" rows="3" data-chg="cust" data-id="${c.id}" data-k="notes" placeholder="Parking, door code, pets, preferences">${esc(c.notes)}</textarea></div>
       <div class="f"><label class="lab" for="c-source">How they found you</label><select id="c-source" data-chg="cust" data-id="${c.id}" data-k="source"><option value="">Not set</option>${SOURCES.map(o=>`<option ${c.source===o?'selected':''}>${o}</option>`).join('')}${c.source&&!SOURCES.includes(c.source)?`<option selected>${esc(c.source)}</option>`:''}</select></div>
@@ -1606,7 +1575,7 @@ function viewMoney(){
     ${unpaid.length?`<div class="list">${unpaid.map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'',right:`<b class="bad">${money0(jobBal(j))}</b>`})).join('')}</div>`:'<p class="empty">Everyone’s paid up.</p>'}
   </section>
   <section class="card"><h2 class="sec">Top customers (labor)</h2>
-    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} jobs</span></span><span class="r"><b>${money0(s.earned)}</b></span></a>`).join('')}</div>`:'<p class="empty">No payments yet.</p>'}
+    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} job${s.doneCount===1?'':'s'}</span></span><span class="r"><b>${money0(s.earned)}</b></span></a>`).join('')}</div>`:'<p class="empty">No payments yet.</p>'}
   </section>`;
 }
 
@@ -1702,11 +1671,9 @@ const A={
   calToday:()=>{ui.calDay='';render();},
   calPick:el=>{ui.calDay=el.dataset.d;render();},
   newOn:el=>{startDraft('');draft.date=el.dataset.d;},
-  addrPick:el=>{const inp=document.getElementById(el.dataset.for);if(!inp)return;const v=el.dataset.v;inp.value=v;inp.dataset.picked=v;const b=document.getElementById(inp.id+'-sug');if(b)b.innerHTML='';
-    if(inp.dataset.inp==='draft'&&draft){draft.address=v;}else if(inp.dataset.chg){inp.dispatchEvent(new Event('change',{bubbles:true}));}},
-  todoDay:()=>{ui.tdDay=!ui.tdDay;render();if(ui.tdDay)setTimeout(()=>{const d=$('#td-due');if(d)d.focus();},0);},
+  todoDay:()=>{ui.tdDay=!ui.tdDay;render();if(ui.tdDay)setTimeout(()=>{const d=$('#td-due')||$('#jt-due');if(d)d.focus();},0);},
   todoAdd:()=>{const t=$('#td-new').value.trim();if(!t){$('#td-new').focus();return;}const dd=$('#td-due');const due=(dd&&dd.value)||'';$('#td-new').value='';if(dd)dd.value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:''});setTimeout(()=>$('#td-new')?.focus(),0);},
-  jobTodoAdd:el=>{const t=$('#jt-new').value.trim();if(!t){$('#jt-new').focus();return;}const due=$('#jt-due').value||'';$('#jt-new').value='';$('#jt-due').value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:el.dataset.id});},
+  jobTodoAdd:el=>{const t=$('#jt-new').value.trim();if(!t){$('#jt-new').focus();return;}const dd=$('#jt-due');const due=(dd&&dd.value)||'';$('#jt-new').value='';if(dd)dd.value='';put('Todos',{id:uid('t'),text:t,due,done:false,doneAt:'',jobId:el.dataset.id});},
   todoTick:el=>todoTick(el.dataset.id),
   todoDel:el=>{const td=getTodo(el.dataset.id);if(!td)return;const was=clone(td);del('Todos',td.id);toast('To-do deleted',()=>put('Todos',was));},
   msgJob:el=>{const j=getJob(el.dataset.id);if(j)jobMsg(j,el.dataset.k);},
@@ -1868,7 +1835,6 @@ function markSent(){
 
 /* ============ events ============ */
 const NEEDSAVE=['msgJob','msgCust','invoiceSend','setStatus','payOpen','finishOpen','quickStatus','reschedOpen','unschedule','moveJob','mergeOpen','exportXlsx','changeConn','disconnect','shareBA'];
-document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.sug'))e.preventDefault();});
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(!f)return;
   if(el.tagName==='BUTTON')e.preventDefault();
@@ -1879,7 +1845,6 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{
   const el=e.target;const k=el.dataset.inp;
   if(el.type==='tel'&&el.selectionStart===el.value.length&&!(e.inputType||'').startsWith('delete')){const f=fmtPhone(el.value);if(f!==el.value)el.value=f;}
-  if(ADDR_IDS.includes(el.id))addrSuggest(el);
   if(el.id==='msg-text'&&msg){msg.text=el.value;updMsgLinks();return;}
   if(el.dataset.rs&&rs){rs[el.dataset.rs]=el.value;return;}
   if(el.id==='tk-text'&&tk){tk.text=el.value;return;}
