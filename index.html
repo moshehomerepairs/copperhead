@@ -246,6 +246,12 @@ body.has-acts main{padding-bottom:calc(var(--nav) + 96px + env(safe-area-inset-b
 body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,0px))}
 .nav .side-brand,.nav .side-acts{display:none}
 .item.cur{background:var(--accent-soft);margin:0 -14px;padding-left:14px;padding-right:14px}
+.cust-contact{display:flex;flex-direction:column;gap:2px;font-size:1.05rem;font-weight:600}
+.cust-contact a{color:var(--accent);text-decoration:none;padding:3px 0}
+.tcols{display:flex;flex-direction:column;gap:14px}
+.tc{display:contents}
+.desk{display:none}
+.whenr{text-align:right;line-height:1.25;font-size:.95rem}
 .pick{color:var(--muted);text-align:center;padding:40px 10px}
 .hm input{width:90px;flex:0 0 90px;text-align:center;font-size:1.05rem}
 .sugs{display:flex;flex-direction:column;gap:2px}
@@ -279,6 +285,10 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
   .split>.pane>*{flex-shrink:0}
   .split>.pane.lp{position:sticky;top:78px;max-height:calc(100vh - 92px);overflow-y:auto;padding-right:4px}
   .az-rail{display:none}
+  .split .letter{top:0}
+  .tcols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+  .tc{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .desk{display:flex}
   #cust-list.has-rail{margin-right:0}
 }
 </style>
@@ -295,7 +305,7 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
 <script>
 (function(){
 "use strict";
-const VERSION='1.10.1';
+const VERSION='1.11.0';
 const errLog=[];const trail=[];
 window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
 window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
@@ -411,7 +421,9 @@ function queue(op){
 }
 function put(table,row,quiet){
   row=Object.assign({},row);row.updatedAt=nowIso();if(!row.createdAt)row.createdAt=row.updatedAt;
-  applyOp({action:'upsert',table,row});queue({action:'upsert',table,row});saveCache();if(!quiet)render();return row;
+  const k=TBL[table];const cur=k&&D[k].find(x=>x.id===row.id);let send=row,partial=false;
+  if(cur){send={id:row.id};partial=true;Object.keys(row).forEach(f=>{if(f==='id'||f==='updatedAt')return;const a=cur[f],b=row[f];const same=a===b||((a==null||a==='')&&(b==null||b===''))||(typeof a!=='object'&&typeof b!=='object'&&String(a)===String(b))||(typeof a==='object'&&typeof b==='object'&&JSON.stringify(a)===JSON.stringify(b));if(!same)send[f]=b;});send.updatedAt=row.updatedAt;}
+  applyOp({action:'upsert',table,row});queue(partial?{action:'upsert',table,row:send,partial:true}:{action:'upsert',table,row});saveCache();if(!quiet)render();return row;
 }
 function del(table,id,quiet){applyOp({action:'remove',table,id});queue({action:'remove',table,id});saveCache();if(!quiet)render();}
 function saveSettings(){queue({action:'saveSettings',settings:D.settings});saveCache();render();}
@@ -713,9 +725,9 @@ function renderLeave(){
     <button class="btn" data-act="lvDiscard">Don’t save</button>
     <button class="btn ghost" data-act="msgClose">Keep editing</button></div>`;m.hidden=false;
 }
-function lvGo(){const L=lv;closeModal();if(!L)return;if(L.to!==undefined){location.hash=L.to;}else if(L.act&&A[L.act]){A[L.act]({dataset:L.ds,tagName:'BUTTON',closest:()=>null});}}
+function lvGo(){const L=lv;closeModal();if(!L)return;if(L.to!==undefined){nav(L.to);}else if(L.act&&A[L.act]){A[L.act]({dataset:L.ds,tagName:'BUTTON',closest:()=>null});}}
 function openMsg(o){fin=null;qk=null;rs=null;tk=null;msg=Object.assign({kinds:[]},o);renderMsg();}
-function closeModal(){tk=null;lv=null;if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
+function closeModal(){if(tk&&tk.listening){try{tkRec&&tkRec.abort();}catch(e){}}tk=null;lv=null;if(qk){clearInterval(autoT);try{rec&&rec.abort();}catch(e){}}msg=null;fin=null;qk=null;rs=null;const m=$('#modal');m.hidden=true;m.innerHTML='';}
 function finTotals(){const j=getJob(fin.jobId);if(!j)return {labor:0,mat:0,total:0,ru:0,base:0};return totals(Object.assign({},j,{hoursWorked:fin.hw,materials:fin.mat,matMarkup:fin.mup,matMarkupFlat:fin.mupf,flatPrice:fin.flat,roundUp:fin.ru}));}
 function finRoundBtn(t){return t.ru||(t.base>0&&Math.abs(t.base-Math.round(t.base))>0.004)?`<button class="btn sm" data-act="finRound">${t.ru?'Undo round up ('+money(t.base)+')':'Round up to '+money(Math.ceil(t.base-0.005))}</button>`:'';}
 function renderResched(){
@@ -741,8 +753,9 @@ function renderTicket(){
   m.innerHTML=`<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tk-h">
     <div class="sec-top"><h2 class="sec" id="tk-h">Report a problem</h2><button class="btn ghost sm" data-act="msgClose">Close</button></div>
     <p class="m0">What went wrong, or what would make the app easier? Say it in your own words.</p>
-    <textarea id="tk-text" rows="5" placeholder="Example: I tapped Send invoice and nothing happened." aria-label="What went wrong">${esc(tk.text)}</textarea>
-    <p class="muted small m0" style="margin-top:-6px">You can tap the microphone on the keyboard and talk.</p>
+    ${SR?`<button class="btn mic ${tk.listening?'on':''}" data-act="tkMic">${tk.listening?'● Listening… tap when done':ICON.mic+' Tap and talk'}</button>`:''}
+    <textarea id="tk-text" rows="5" placeholder="${SR?'Or type it here.':'Example: I tapped Send invoice and nothing happened.'}" aria-label="What went wrong">${esc(tk.text)}</textarea>
+    <p class="muted small m0" style="margin-top:-6px">${SR?'Talk as long as you want. It’s written out here so you can check it before you send.':'You can tap the microphone on the keyboard and talk.'}</p>
     <div class="row">${tk.photo?`<span class="small good">✓ Screenshot added</span><button class="btn sm ghost" data-act="tkNoPhoto">Remove</button>`:`<label class="btn sm" for="tk-photo">${ICON.img} Add a screenshot (optional)</label><input id="tk-photo" type="file" accept="image/*" hidden>`}</div>
     <p class="muted small m0">The app adds which screen you were on and its version, so it’s easier to fix.</p>
     <button class="btn p go" data-act="tkSend" style="min-height:52px" ${tk.sending?'disabled':''}>${tk.sending?'Sending…':'Send'}</button>
@@ -805,6 +818,18 @@ function renderQuick(){
     <button class="btn p go" data-act="qkSave" style="min-height:52px">Save</button>
   </div>`;
   m.hidden=false;
+}
+/* problem report by voice: keeps listening until he taps again */
+let tkRec=null;
+function tkListen(){
+  if(!SR||!tk)return;try{if(tkRec)tkRec.abort();}catch(e){}
+  tkRec=new SR();tkRec.lang='en-US';tkRec.interimResults=true;tkRec.continuous=true;
+  const base=tk.text?tk.text.trim()+' ':'';let finalTxt='';
+  tkRec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalTxt+=r[0].transcript+' ';else interim+=r[0].transcript;}
+    if(!tk)return;tk.text=(base+finalTxt+interim).replace(/\s+/g,' ').trim();const ta=$('#tk-text');if(ta)ta.value=tk.text;};
+  tkRec.onerror=e=>{if(!tk)return;if(e.error==='not-allowed'||e.error==='service-not-allowed'){tk.listening=false;renderTicket();toast('Allow the microphone for this app to talk to it');}};
+  tkRec.onend=()=>{if(!tk)return;if(tk.listening){try{tkRec.start();return;}catch(e){}}tk.listening=false;renderTicket();};
+  tk.listening=true;renderTicket();try{tkRec.start();}catch(e){tk.listening=false;renderTicket();}
 }
 /* talking: Chrome's built-in voice typing */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
@@ -1021,7 +1046,7 @@ function exportSheets(year){
   const C=D.customers.slice().sort((a,b)=>lastKey(a.name).localeCompare(lastKey(b.name))).map(c=>{const s=custStats(c);return [c.name||'',c.phone||'',c.phone2||'',c.email||'',c.address||'',c.source||'',c.tags||'',c.notes||'',s.doneCount,s.firstD,s.last,s.labor,s.paid,s.owes||''];});
   const P=D.payments.filter(p=>inY(p.date)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(p=>{const j=getJob(p.jobId)||{};return [p.date||'',custName(p.customerId),j.title||'',num(p.amount),p.method||'',p.note||''];});
   const M={};const mk=d=>String(d||'').slice(0,7);
-  D.jobs.filter(j=>['done','unpaid','paid'].includes(j.status)&&j.date&&inY(j.date)).forEach(j=>{const k=mk(j.date);const t=totals(j);const m=M[k]||(M[k]={jobs:0,h:0,lab:0,mat:0,mup:0,col:0});m.jobs++;m.h+=num(j.hoursWorked);m.lab+=t.labor;m.mat+=t.matCost;m.mup+=t.mup;});
+  D.jobs.filter(j=>['done','unpaid','paid'].includes(j.status)&&j.date&&inY(j.date)).forEach(j=>{const k=mk(j.date);const t=totals(j);const m=M[k]||(M[k]={jobs:0,h:0,lab:0,mat:0,mup:0,col:0});m.jobs++;m.h+=num(j.hoursWorked);m.lab+=t.labor+t.ru;m.mat+=t.matCost;m.mup+=t.mup;});
   D.payments.filter(p=>p.date&&inY(p.date)).forEach(p=>{const k=mk(p.date);const m=M[k]||(M[k]={jobs:0,h:0,lab:0,mat:0,mup:0,col:0});m.col+=num(p.amount);});
   const B=Object.keys(M).sort().reverse().map(k=>{const m=M[k];return [parseYmd(k+'-01').toLocaleDateString('en-US',{month:'long',year:'numeric'}),m.jobs,m.h,m.lab,m.mup||'',m.lab+m.mup,m.h?(m.lab+m.mup)/m.h:'',m.mat,m.col];});
   return [
@@ -1088,7 +1113,9 @@ function render(){
     main.querySelectorAll('input[id],textarea[id],select[id]').forEach(el=>{if(el.type==='file'||el.type==='checkbox'||el.type==='radio')return;if((el===document.activeElement&&el.tagName!=='SELECT')||(!el.dataset.chg&&!el.dataset.inp))keep[el.id]=el.value;});
     const a=document.activeElement;if(a&&a.id&&main.contains(a)&&isTyping(a)){act=a.id;try{sel=[a.selectionStart,a.selectionEnd];}catch(e){}}
   }
-  main.innerHTML=wide()&&SPLIT[r.v]?SPLIT[r.v](r.id):V(r.id);main.dataset.key=key;renderSaveBar();
+  const fam=r.v==='job'?'jobs':r.v==='customer'?'customers':r.v;const oldLp=main.querySelector('.lp');const lpTop=oldLp&&main.dataset.fam===fam?oldLp.scrollTop:0;
+  main.innerHTML=wide()&&SPLIT[r.v]?SPLIT[r.v](r.id):V(r.id);main.dataset.key=key;main.dataset.fam=fam;renderSaveBar();
+  if(lpTop){const lp=main.querySelector('.lp');if(lp)lp.scrollTop=lpTop;}
   Object.keys(keep).forEach(id=>{const el=document.getElementById(id);if(el&&el.value!==keep[id]){el.value=keep[id];if(el.dataset.chg)el.dataset.dirty='1';}});
   if(act){const el=document.getElementById(act);if(el){el.focus({preventScroll:true});if(sel&&sel[0]!=null){try{el.setSelectionRange(sel[0],sel[1]);}catch(e){}}}}
 }
@@ -1102,10 +1129,42 @@ const SPLIT={
   customer:id=>`<div class="split"><div class="pane lp">${viewCustomers()}</div><div class="pane">${viewCustomer(id)}</div></div>`
 };
 let curHash=location.hash||'#today';
-window.addEventListener('hashchange',()=>{
+/* Phone back button: switching tabs doesn't pile up. Today is the bottom of the stack (back leaves the app),
+   a main tab sits one above it (back goes to Today), and pages opened from there stack on top. */
+const MAIN_TABS=['today','jobs','waiting','lists','customers','money'];
+const hv=h=>String(h||'#today').replace(/^#/,'').split('/')[0]||'today';
+let curD=(history.state&&typeof history.state.d==='number')?history.state.d:0,goPending=null;
+if(!(history.state&&typeof history.state.d==='number'))history.replaceState({d:curD},'',location.href);
+function nav(h){
+  h=h||'#today';
+  const pk=edKeyOf(curHash);if(pk&&pk!==edKeyOf(h)&&edDirty(pk)){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();lv={key:pk,to:h};renderLeave();return;}
+  if(h===(location.hash||'#today')){onRoute();return;}
+  const v=hv(h),d=curD;
+  if(MAIN_TABS.includes(v)){
+    const want=v==='today'?0:1;
+    if(d>want){goPending={h,d:want};history.go(want-d);return;}
+    if(d===want){history.replaceState({d},'',h);onRoute();return;}
+    history.pushState({d:want},'',h);curD=want;onRoute();return;
+  }
+  history.pushState({d:d+1},'',h);curD=d+1;onRoute();
+}
+window.addEventListener('popstate',e=>{
+  if(goPending){const g=goPending;goPending=null;history.replaceState({d:g.d},'',g.h);curD=g.d;onRoute();return;}
+  curD=(e.state&&typeof e.state.d==='number')?e.state.d:curD+1;if(!(e.state&&typeof e.state.d==='number'))history.replaceState({d:curD},'',location.href);
+  onRoute(true);
+});
+function onRoute(fromBack){
   const was=curHash,now=location.hash||'#today',pk=edKeyOf(was);
-  if(pk&&pk!==edKeyOf(now)&&edDirty(pk)){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();history.replaceState(null,'',was);lv={key:pk,to:now};renderLeave();return;}
-  curHash=now;trail.push(location.hash||'#today');if(trail.length>6)trail.shift();if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);});
+  if(fromBack&&pk&&pk!==edKeyOf(now)&&edDirty(pk)){if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();history.replaceState(history.state,'',was);lv={key:pk,to:now};renderLeave();return;}
+  curHash=now;
+  if(ui.newCust&&edKeyOf(was)==='cust:'+ui.newCust&&edKeyOf(now)!==edKeyOf(was)){const nc=getCust(ui.newCust);if(nc&&nc.name==='New customer'&&!nc.phone&&!nc.address&&!custJobs(nc).length)del('Customers',nc.id,true);ui.newCust='';}
+  if(was!==now&&(msg||fin||qk||rs||tk))closeModal();
+  trail.push(location.hash||'#today');if(trail.length>6)trail.shift();if(openQuickLink())return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();ui.confirm='';ui.payFor='';ui.mergeFor='';const r=route();if(r.v==='new'&&!draft)startDraft(r.id);if(r.v!=='new')draft=null;render();window.scrollTo(0,0);}
+/* in-app links go through nav() (after any button action on the link has run) */
+document.addEventListener('click',e=>{
+  if(e.defaultPrevented)return;const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||a.target==='_blank'||e.ctrlKey||e.metaKey)return;
+  e.preventDefault();const h=a.getAttribute('href');setTimeout(()=>nav(h),0);
+});
 
 /* ---------- setup ---------- */
 function viewSetup(){
@@ -1133,8 +1192,9 @@ function attention(){
 }
 function jobLine(j,opts){
   opts=opts||{};const c=getCust(j.customerId)||{};const t=totals(j);
-  const right=opts.right!==undefined?opts.right:(['done','unpaid'].includes(j.status)&&!t.total?'<b class="bad">No price</b>':j.status==='unpaid'?`<b class="bad">${money0(jobBal(j))}</b>`:t.total?`<b>${money0(t.total)}</b>`:'');
-  const when=opts.sub!==undefined?opts.sub:(j.date?fmtDate(j.date)+(j.time?' · '+fmtTime(j.time):''):'');
+  const dayRight=opts.right===undefined&&opts.sub===undefined&&!opts.titleFirst&&j.date&&['scheduled','new','waiting','followup'].includes(j.status);
+  const right=opts.right!==undefined?opts.right:dayRight?`<b class="whenr">${esc(fmtDate(j.date).replace(',',''))}${j.time?'<br>'+esc(fmtTime(j.time)):''}</b>`:(['done','unpaid'].includes(j.status)&&!t.total?'<b class="bad">No price</b>':j.status==='unpaid'?`<b class="bad">${money0(jobBal(j))}</b>`:t.total?`<b>${money0(t.total)}</b>`:'');
+  const when=opts.sub!==undefined?opts.sub:dayRight?'':(j.date?fmtDate(j.date)+(j.time?' · '+fmtTime(j.time):''):'');
   const big=opts.titleFirst?(j.title||'Job'):(c.name||'No customer');const small=opts.titleFirst?when:[j.title,when].filter(Boolean).join(' · ');
   const cur=route().v==='job'&&route().id===j.id?' cur':'';
   return `<a class="item${cur}" href="#job/${j.id}"><span class="l"><b>${esc(big)}</b><span>${esc(small)}</span></span><span class="r">${opts.noPill?'':`<span class="pill st-${j.status}">${esc(SL[j.status]||j.status)}</span>`}${j.flag==='quick'?'<span class="pill st-check">Check details</span>':''}${right}</span></a>`;
@@ -1175,19 +1235,23 @@ function viewToday(){
   <p class="m0 muted">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</p>
   ${unsaved.length?`<p class="note warn">Changes not saved yet: ${unsaved.map(([h,n])=>`<a href="${h}">${esc(n)}</a>`).join(', ')}. Open to save or undo them.</p>`:''}
   ${hero}
+  <div class="tcols"><div class="tc">
   ${(()=>{const q=D.jobs.filter(j=>j.flag==='quick'&&j.status!=='cancelled');return q.length?`<section class="card"><div class="sec-top"><h2 class="sec">Quick notes to finish</h2><span class="small muted">${q.length}</span></div><div class="list">${q.map(j=>jobLine(j)).join('')}</div></section>`:'';})()}
   ${sk?`<a class="card hi" href="#sukkah" style="text-decoration:none;color:inherit"><div class="sec-top"><h2 class="sec">Sukkah season</h2><b>${sk}</b></div><p class="small m0">${sk} past sukkah customer${sk===1?' hasn’t':'s haven’t'} booked yet. Tap to message them.</p></a>`:''}
   <section class="card"><div class="sec-top"><h2 class="sec">${todays.length?'All of today':'Today’s jobs'}</h2>${route?`<a class="btn sm" href="${esc(route)}" target="_blank" rel="noopener">${ICON.map} Route</a>`:''}</div>
     ${todays.length?`<div class="list">${todays.map(j=>{const c=getCust(j.customerId)||{};return `<div style="padding:10px 0;display:flex;flex-direction:column;gap:8px"><a class="item" style="padding:0" href="#job/${j.id}"><span class="l"><b>${j.time?fmtTime(j.time)+' · ':''}${esc(c.name||'No customer')}</b><span>${esc([j.title,c.address].filter(Boolean).join(' · '))}</span></span><span class="r"><span class="pill st-${j.status}">${esc(SL[j.status])}</span></span></a>
       ${j.status==='scheduled'?`<div class="row"><button class="btn sm" data-act="msgJob" data-id="${j.id}" data-k="omw">On my way</button><button class="btn sm" data-act="msgJob" data-id="${j.id}" data-k="late">Running late</button>${c.address?`<a class="btn sm" href="${esc(mapsLink(c.address))}" target="_blank" rel="noopener">Directions</a>`:''}</div>`:''}</div>`;}).join('')}</div>`:'<p class="empty">Nothing scheduled today.</p>'}
   </section>
+  ${tomorrow.length?`<section class="card"><div class="sec-top"><h2 class="sec">${tmName}</h2><span class="small muted">Send reminders</span></div><div class="list">${tomorrow.map(j=>{const c=getCust(j.customerId)||{};const sent=j.remindedFor===j.date;return `<div class="item"><a class="l" href="#job/${j.id}" style="color:inherit;text-decoration:none"><b>${j.time?fmtTime(j.time)+' · ':''}${esc(c.name||'')}</b><span>${esc(j.title||'')}</span></a><span class="r"><button class="btn sm ${sent?'':'p'}" data-act="msgJob" data-id="${j.id}" data-k="remind">${sent?'Sent ✓':'Remind'}</button></span></div>`;}).join('')}</div></section>`:''}
+  ${(()=>{const end=ymd(addDays(new Date(),7));const wk=D.jobs.filter(j=>j.date&&j.date>tm&&j.date<=end&&['scheduled','new','waiting','followup'].includes(j.status)).sort((a,b)=>(a.date+(a.time||'99')).localeCompare(b.date+(b.time||'99')));return `<section class="card desk"><div class="sec-top"><h2 class="sec">Coming up this week</h2><span class="small muted">${wk.length||''}</span></div>${wk.length?`<div class="list">${wk.map(j=>jobLine(j)).join('')}</div>`:'<p class="empty small">Nothing else booked this week.</p>'}</section>`;})()}
+  </div><div class="tc">
   ${(()=>{const sh=D.shopping.filter(x=>!x.bought);if(!sh.length)return '';const st=[...new Set(sh.map(x=>x.store||'any store'))];return `<a class="card" href="#lists" data-act="listTab" data-k="shop" style="text-decoration:none;color:inherit"><div class="sec-top"><h2 class="sec">${ICON.cart}Shopping</h2><b>${sh.length}</b></div><p class="small muted m0">${sh.length} item${sh.length===1?'':'s'} to buy · ${esc(st.slice(0,3).join(', '))}${st.length>3?'…':''}</p></a>`;})()}
   <section class="card"><div class="sec-top"><h2 class="sec">To do</h2><span class="small muted">${open.length} open${later?` · ${later} later`:''} · <a href="#lists" data-act="listTab" data-k="todo">all</a></span></div>
     ${todoAddForm()}
     ${open.length?`<div class="list">${open.map(todoRow).join('')}</div>`:'<p class="empty">All caught up.</p>'}
     ${doneToday.length?`<details ${ui.doneOpen?'open':''} data-tog="doneOpen"><summary>Done today (${doneToday.length})</summary><div class="list">${doneToday.map(todoRow).join('')}</div></details>`:''}
   </section>
-  ${tomorrow.length?`<section class="card"><div class="sec-top"><h2 class="sec">${tmName}</h2><span class="small muted">Send reminders</span></div><div class="list">${tomorrow.map(j=>{const c=getCust(j.customerId)||{};const sent=j.remindedFor===j.date;return `<div class="item"><a class="l" href="#job/${j.id}" style="color:inherit;text-decoration:none"><b>${j.time?fmtTime(j.time)+' · ':''}${esc(c.name||'')}</b><span>${esc(j.title||'')}</span></a><span class="r"><button class="btn sm ${sent?'':'p'}" data-act="msgJob" data-id="${j.id}" data-k="remind">${sent?'Sent ✓':'Remind'}</button></span></div>`;}).join('')}</div></section>`:''}
+  </div></div>
   <div style="text-align:center"><button class="btn ghost sm" data-act="ticketOpen">Something not working? Report it</button></div>`;
 }
 
@@ -1297,10 +1361,10 @@ function viewWaiting(){
 /* ---------- jobs ---------- */
 const isWaiting=j=>WAITING.includes(j.status)||(j.status==='scheduled'&&!j.date);
 const needsMoney=j=>['done','unpaid'].includes(j.status)&&(jobBal(j)>0||totals(j).total<=0);
-const JOB_FILTERS=[['open','To do',j=>['new','waiting','followup','scheduled'].includes(j.status)],['scheduled','On the schedule',j=>j.status==='scheduled'&&!!j.date],['unpaid','Unpaid',needsMoney],['paid','Paid',j=>j.status==='paid'],['all','All',()=>true]];
+const JOB_FILTERS=[['open','Open',j=>['new','waiting','followup','scheduled'].includes(j.status)],['scheduled','On the schedule',j=>j.status==='scheduled'&&!!j.date],['unpaid','Unpaid',needsMoney],['paid','Paid',j=>j.status==='paid'],['all','All',()=>true]];
 function filteredJobs(){
-  const f=(JOB_FILTERS.find(x=>x[0]===ui.jobFilter)||JOB_FILTERS[0])[2];const q=ui.jobSearch.trim().toLowerCase();
-  return D.jobs.filter(f).filter(j=>!q||[j.title,j.description,custName(j.customerId),(getCust(j.customerId)||{}).phone,(getCust(j.customerId)||{}).address].join(' ').toLowerCase().includes(q))
+  const f=(JOB_FILTERS.find(x=>x[0]===ui.jobFilter)||JOB_FILTERS[0])[2];const q=ui.jobSearch.trim().toLowerCase();const qd=digits(q);
+  return D.jobs.filter(f).filter(j=>{if(!q)return true;const c=getCust(j.customerId)||{};return [j.title,j.description,c.name,c.phone,c.address].join(' ').toLowerCase().includes(q)||(qd.length>=3&&!/[a-z]/.test(q)&&(digits(c.phone).includes(qd)||digits(c.phone2).includes(qd)));})
     .sort((a,b)=>{if(ui.jobFilter==='scheduled'||ui.jobFilter==='open'){const ad=a.date||'9999',bd=b.date||'9999';return ad.localeCompare(bd)||(a.time||'').localeCompare(b.time||'');}return (b.date||b.createdAt||'').localeCompare(a.date||a.createdAt||'');});
 }
 function jobRows(){const l=filteredJobs();const shown=l.slice(0,150);return l.length?`<div class="list">${shown.map(j=>jobLine(j)).join('')}</div>${l.length>150?`<p class="muted small m0">Showing 150 of ${l.length}. Search to find older jobs.</p>`:''}`:`<p class="empty">${D.jobs.length?'No jobs here.':'No jobs yet. Tap “+ Job” to add the first one.'}</p>`;}
@@ -1373,13 +1437,13 @@ function saveDraft(){
   let cid=d.customerId;
   if(d.custMode==='newcust'){
     if(!d.name.trim()){toast('Add the customer’s name');$('#nc-name')?.focus();return;}
-    const c=put('Customers',{id:uid('c'),name:d.name.trim(),phone:d.phone.trim(),address:d.address.trim(),email:d.email.trim(),source:d.source,notes:'',tags:''},true);cid=c.id;
+    const c=put('Customers',{id:uid('c'),name:d.name.trim(),phone:fmtPhone(d.phone),address:d.address.trim(),email:d.email.trim(),source:d.source,notes:'',tags:''},true);cid=c.id;
   }else if(!cid){toast('Choose a customer or add a new one');return;}
   const st=d.status==='new'&&d.date?'scheduled':d.status;
   const pr=(S().rates||[])[num(String(d.priceType).split(':')[1])]||defRate();
   const j=put('Jobs',{id:uid('j'),customerId:cid,title:d.title.trim(),description:d.description.trim(),status:st,date:d.date,time:d.time,hours:d.hours,priceType:d.priceType==='flat'?'flat':'hourly',flatPrice:d.priceType==='flat'?num(d.flatPrice):'',hoursWorked:'',materials:'',matMarkup:S().markupOn?num(S().markupPct):'',matMarkupFlat:S().markupOn&&num(S().markupFlat)?num(S().markupFlat):'',serviceFee:num(pr.fee),includedHours:num(pr.inc),hourlyRate:num(pr.rate),notes:''},true);
   if(d.todo.trim())put('Todos',{id:uid('t'),text:d.todo.trim(),due:d.date||'',done:false,doneAt:'',jobId:j.id},true);
-  draft=null;location.hash='#job/'+j.id;toast('Job saved');
+  draft=null;nav('#job/'+j.id);toast('Job saved');
 }
 
 /* ---------- job detail ---------- */
@@ -1510,6 +1574,8 @@ function viewCustomer(id){
     ${waLink(c.phone)?`<a class="btn" href="${esc(waLink(c.phone))}" target="_blank" rel="noopener">${ICON.wa}WhatsApp</a>`:'<button class="btn" disabled>'+ICON.wa+'WhatsApp</button>'}
     ${c.address?`<a class="btn" href="${esc(mapsLink(c.address))}" target="_blank" rel="noopener">${ICON.map}Map</a>`:'<button class="btn" disabled>'+ICON.map+'Map</button>'}
   </div>
+  ${c.phone||c.phone2||c.address?`<div class="cust-contact">${c.phone?`<a href="tel:${esc(telNum(c.phone))}">${esc(c.phone)}</a>`:''}${c.phone2?`<a href="tel:${esc(telNum(c.phone2))}">${esc(c.phone2)}</a>`:''}${c.address?addrLink(c.address):''}</div>`:`<p class="muted small m0">No phone or address yet. Add them under Details.</p>`}
+  ${c.notes?`<p class="note m0">${esc(c.notes)}</p>`:''}
   <div class="tiles">
     <div class="tile"><span>Earned (labor)</span><b>${money0(s.earned)}</b></div>
     <div class="tile"><span>Jobs done</span><b>${s.doneCount}</b></div>
@@ -1519,7 +1585,7 @@ function viewCustomer(id){
   <p class="muted small m0">${s.firstD?`Customer since ${fmtDateY(s.firstD)}`:'New customer'}${s.last?` · last job ${fmtDateY(s.last)}`:''}</p>
   <a class="btn p" href="#new/${c.id}">+ New job for this customer</a>
   <section class="card"><div class="sec-top"><h2 class="sec">Job history</h2><span class="small muted">${js.length}</span></div>
-    ${js.length?`<div class="list">${js.map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'No date',titleFirst:true})).join('')}</div>`:'<p class="empty">No jobs yet.</p>'}
+    ${js.length?`<div class="list">${(ui.allJobsFor===c.id?js:js.slice(0,5)).map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'No date',titleFirst:true})).join('')}</div>${js.length>5&&ui.allJobsFor!==c.id?`<div><button class="btn sm" data-act="allJobs" data-id="${c.id}">Show all ${js.length} jobs</button></div>`:''}`:'<p class="empty">No jobs yet.</p>'}
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">Photos</h2><span class="small muted">${ph.length}</span></div>
     ${ph.length?(ui.showPhotosFor===c.id?`<div class="thumbs">${ph.map(p=>thumb(p,false)).join('')}</div>`:`<button class="btn sm" data-act="showPhotos" data-id="${c.id}">Show ${ph.length} photo${ph.length===1?'':'s'}</button>`):'<p class="empty small">Photos from their jobs show up here.</p>'}
@@ -1550,7 +1616,7 @@ function viewMoney(){
   const ws=addDays(now,-((now.getDay()+6)%7));const wk=ymd(ws);const mo=t.slice(0,7);const yr=t.slice(0,4);
   const paidIn=f=>r2(D.payments.filter(p=>f(String(p.date||''))).reduce((s,p)=>s+num(p.amount),0));
   const doneJobs=D.jobs.filter(j=>['done','unpaid','paid'].includes(j.status)&&j.date);
-  const laborIn=f=>{const js=doneJobs.filter(j=>f(j.date));const lab=js.reduce((s,j)=>{const t=totals(j);return s+t.labor+t.mup;},0);const h=js.reduce((s,j)=>s+num(j.hoursWorked),0);return {lab,h,n:js.length};};
+  const laborIn=f=>{const js=doneJobs.filter(j=>f(j.date));const lab=js.reduce((s,j)=>{const t=totals(j);return s+t.labor+t.mup+t.ru;},0);const h=js.reduce((s,j)=>s+num(j.hoursWorked),0);return {lab,h,n:js.length};};
   const W=laborIn(d=>d>=wk&&d<=t),M=laborIn(d=>d.startsWith(mo)),Y=laborIn(d=>d.startsWith(yr));
   const unpaid=D.jobs.filter(j=>['done','unpaid'].includes(j.status)&&jobBal(j)>0).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const owed=r2(unpaid.reduce((s,j)=>s+jobBal(j),0));
@@ -1575,7 +1641,7 @@ function viewMoney(){
     ${unpaid.length?`<div class="list">${unpaid.map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'',right:`<b class="bad">${money0(jobBal(j))}</b>`})).join('')}</div>`:'<p class="empty">Everyone’s paid up.</p>'}
   </section>
   <section class="card"><h2 class="sec">Top customers (labor)</h2>
-    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} job${s.doneCount===1?'':'s'}</span></span><span class="r"><b>${money0(s.earned)}</b></span></a>`).join('')}</div>`:'<p class="empty">No payments yet.</p>'}
+    ${top.length?`<div class="list">${top.map(({c,s})=>`<a class="item" href="#customer/${c.id}"><span class="l"><b>${esc(c.name)}</b><span>${s.doneCount} job${s.doneCount===1?'':'s'}</span></span><span class="r"><b>${money0(s.earned)}</b></span></a>`).join('')}</div>`:'<p class="empty">No finished jobs yet.</p>'}
   </section>`;
 }
 
@@ -1642,7 +1708,7 @@ const A={
   edCancel:()=>{const k=edKey();edClear(k);render();toast('Changes undone');},
   lvSave:()=>{const a=document.activeElement;if(a&&a.blur)a.blur();if(lv)edApply(lv.key);render();toast('Saved');lvGo();},
   lvDiscard:()=>{if(lv)edClear(lv.key);render();lvGo();},
-  back:()=>{if(history.length>1)history.back();else location.hash='#today';},
+  back:()=>{if(curD>0)history.back();else nav('#today');},
   syncNow:()=>{sync.err='';if(outbox.length)flush();else refresh(true);},
   refresh:()=>refresh(true),
   undo:()=>{const f=undoFn;undoFn=null;$('#toast').hidden=true;if(f)f();},
@@ -1651,7 +1717,7 @@ const A={
     if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)){errEl.innerHTML='<p class="err">That doesn’t look like the connection link. It starts with https://script.google.com/macros/s/ and ends with /exec.</p>';return;}
     if(!pass){errEl.innerHTML='<p class="err">Enter the passcode.</p>';return;}
     errEl.innerHTML='<p class="muted m0">Connecting…</p>';conn={url,pass};
-    try{await api({action:'ping'});lsSet('mhr-conn',conn);location.hash='#today';await refresh(false);toast('Connected');}
+    try{await api({action:'ping'});lsSet('mhr-conn',conn);nav('#today');await refresh(false);toast('Connected');}
     catch(e){conn=null;errEl.innerHTML=`<p class="err">${esc(e.code==='wrong_passcode'?'Wrong passcode. It must match the one in the script exactly (and can’t be CHANGE-ME).':e.code==='offline'?'Couldn’t reach the link. Check your connection and that the script is deployed for “Anyone”.':'That link didn’t answer correctly. Copy it again from Deploy → Manage deployments.')}</p>`;}
   },
   changeConn:async()=>{
@@ -1720,12 +1786,13 @@ const A={
     const files=await Promise.all(ph.map(async(p,i)=>{const b=await (await fetch(photoCache[p.id])).blob();return new File([b],`${p.kind}-${i+1}.jpg`,{type:'image/jpeg'});}));
     await shareFiles(files,j.title,`Photos: ${j.title}`);
   },
+  allJobs:el=>{ui.allJobsFor=el.dataset.id;render();},
   showPhotos:el=>{ui.showPhotosFor=el.dataset.id;render();},
   askConfirm:el=>{ui.confirm=el.dataset.k;render();},
   cancelConfirm:()=>{ui.confirm='';render();},
-  jobDel:el=>{const id=el.dataset.id;edClear('job:'+id);D.todos.filter(t=>t.jobId===id).forEach(t=>del('Todos',t.id,true));D.payments.filter(p=>p.jobId===id).forEach(p=>del('Payments',p.id,true));D.photos.filter(p=>p.jobId===id).forEach(p=>{api({action:'deletePhoto',id:p.id}).catch(()=>{});});D.photos=D.photos.filter(p=>p.jobId!==id);del('Jobs',id,true);ui.confirm='';location.hash='#jobs';toast('Job deleted');},
-  custNew:()=>{const c=put('Customers',{id:uid('c'),name:'New customer',phone:'',address:'',email:'',notes:'',tags:'',source:''},true);location.hash='#customer/'+c.id;setTimeout(()=>{const i=$('#c-name');if(i){i.focus();i.select();}},50);},
-  custDel:el=>{edClear('cust:'+el.dataset.id);del('Customers',el.dataset.id,true);ui.confirm='';location.hash='#customers';toast('Customer deleted');},
+  jobDel:el=>{const id=el.dataset.id;edClear('job:'+id);D.todos.filter(t=>t.jobId===id).forEach(t=>del('Todos',t.id,true));D.payments.filter(p=>p.jobId===id).forEach(p=>del('Payments',p.id,true));D.photos.filter(p=>p.jobId===id).forEach(p=>{api({action:'deletePhoto',id:p.id}).catch(()=>{});});D.photos=D.photos.filter(p=>p.jobId!==id);del('Jobs',id,true);ui.confirm='';nav('#jobs');toast('Job deleted');},
+  custNew:()=>{const c=put('Customers',{id:uid('c'),name:'New customer',phone:'',address:'',email:'',notes:'',tags:'',source:''},true);ui.newCust=c.id;nav('#customer/'+c.id);setTimeout(()=>{const i=$('#c-name');if(i){i.focus();i.select();}},50);},
+  custDel:el=>{edClear('cust:'+el.dataset.id);del('Customers',el.dataset.id,true);ui.confirm='';nav('#customers');toast('Customer deleted');},
   mergeOpen:el=>{ui.mergeFor=el.dataset.id;render();},
   mergeCancel:()=>{ui.mergeFor='';render();},
   mergeDo:el=>{
@@ -1736,7 +1803,7 @@ const A={
     const m=Object.assign({},to);['phone','phone2','email','address','source'].forEach(k=>{if(!m[k]&&from[k])m[k]=from[k];});
     if(from.notes&&from.notes!==to.notes)m.notes=[to.notes,from.notes].filter(Boolean).join(' · ');
     if(from.tags)m.tags=[...new Set([...String(to.tags||'').split(','),...String(from.tags).split(',')].map(x=>x.trim()).filter(Boolean))].join(', ');
-    put('Customers',m,true);del('Customers',from.id,true);ui.mergeFor='';location.hash='#customer/'+to.id;toast(`Merged into ${to.name}`);
+    put('Customers',m,true);del('Customers',from.id,true);ui.mergeFor='';nav('#customer/'+to.id);toast(`Merged into ${to.name}`);
   },
   unschedule:el=>{if(rs)closeModal();const j=getJob(el.dataset.id);if(!j)return;const was={date:j.date,time:j.time,status:j.status};put('Jobs',Object.assign({},j,{date:'',time:'',status:j.status==='scheduled'?'new':j.status}));toast('Taken off the schedule. It’s on the waiting list.',()=>put('Jobs',Object.assign({},getJob(j.id),was)));},
   moveJob:el=>{const j=getJob(el.dataset.id);const to=getCust($('#j-cust').value);if(!j||!to){toast('Choose a customer');return;}if(to.id===j.customerId){toast('It’s already under '+to.name);return;}
@@ -1781,9 +1848,10 @@ const A={
     if(textIt)setTimeout(()=>jobMsg(getJob(j.id),'resched'),250);
   },
   ticketOpen:()=>{msg=null;fin=null;qk=null;rs=null;tk={text:'',photo:'',from:(trail[trail.length-1]||location.hash||'#today')};renderTicket();setTimeout(()=>{const t=$('#tk-text');if(t)t.focus();},60);},
+  tkMic:()=>{if(!tk)return;if(tk.listening){tk.listening=false;try{tkRec&&tkRec.stop();}catch(e){}renderTicket();return;}tkListen();},
   tkNoPhoto:()=>{if(tk){tk.photo='';renderTicket();}},
   tkSend:async()=>{
-    if(!tk||tk.sending)return;if(!tk.text.trim()){toast('Write or say what went wrong first');const t=$('#tk-text');if(t)t.focus();return;}
+    if(!tk||tk.sending)return;if(tk.listening){tk.listening=false;try{tkRec&&tkRec.stop();}catch(e){}}if(!tk.text.trim()){toast('Write or say what went wrong first');const t=$('#tk-text');if(t)t.focus();return;}
     const t=Object.assign(ticketPayload(),tk.photo?{photo:tk.photo.split(',')[1]}:{});
     tk.sending=true;renderTicket();
     try{await api(Object.assign({action:'ticket'},t),90000);closeModal();toast('Sent. Thank you!');}
@@ -1875,7 +1943,7 @@ document.addEventListener('change',e=>{
   if(k==='jobhm'){const id=el.dataset.id;const h=$('#j-hwh'),m=$('#j-hwm');let mv=m?m.value:'';if(num(mv)>59&&m){const extra=Math.floor(num(mv)/60);if(h)h.value=String(num(h.value)+extra);mv=String(num(mv)%60);m.value=mv;}edPut('job:'+id,{hoursWorked:hmJoin(h?h.value:'',mv)});render();return;}
   if(k==='job'){const j0=getJob(el.dataset.id);if(!j0)return;const ek='job:'+j0.id;const j=Object.assign({},j0,ED[ek]||{});const ch={[el.dataset.k]:v};
     if(el.dataset.k==='priceType'&&String(v).startsWith('rate:')){const r=(S().rates||[])[num(v.split(':')[1])];if(!r)return;Object.assign(ch,{priceType:'hourly',serviceFee:num(r.fee),includedHours:num(r.inc),hourlyRate:num(r.rate)});}if(el.dataset.k==='date'&&v&&WAITING.includes(j.status))ch.status='scheduled';edPut(ek,ch);render();}
-  else if(k==='cust'){const c=getCust(el.dataset.id);if(!c)return;edPut('cust:'+c.id,{[el.dataset.k]:v});render();}
+  else if(k==='cust'){const c=getCust(el.dataset.id);if(!c)return;edPut('cust:'+c.id,{[el.dataset.k]:['phone','phone2'].includes(el.dataset.k)?fmtPhone(v):v});render();}
   else if(k==='rate'){const i=num(el.dataset.i);const cur=edSet();const r=Object.assign({},(cur.rates||[])[i]);r[el.dataset.k]=el.dataset.k==='name'?v:num(v);edPut('set',{rates:(cur.rates||[]).map((x,n)=>n===i?r:x)});render();}
   else if(k==='defRate'){edPut('set',{defaultRate:num(el.value)});render();}
   else if(k==='setBool'){edPut('set',{[el.dataset.k]:el.checked});render();}
@@ -1902,14 +1970,16 @@ document.addEventListener('pointermove',e=>{if(azOn){azJump(e.clientX,e.clientY)
 ['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{azOn=false;}));
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.az){const r=e.target.getBoundingClientRect();azLast='';azJump(r.left+r.width/2,r.top+r.height/2);}});
 document.addEventListener('toggle',e=>{const k=e.target&&e.target.dataset&&e.target.dataset.tog;if(k)ui[k]=e.target.open;},true);
-$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+$('#modal').addEventListener('click',e=>{if(e.target.id!=='modal')return;if((tk&&tk.text.trim())||(qk&&qk.text.trim())||fin){toast('Tap Close if you want to leave this');return;}closeModal();});
 
 /* ============ start ============ */
 const cached=lsGet('mhr-cache',null);if(cached)D=normalize(cached);
-function openQuickLink(){const h=location.hash||'';if(!/^#quick(\/|$)/.test(h)||!conn)return false;const t=decodeURIComponent(h.replace(/^#quick\/?/,'').replace(/\+/g,' '));history.replaceState(null,'','#today');render();A.quickOpen();if(t==='voice'){qk.voice=true;setTimeout(qkListen,300);return true;}if(t){qk.text=t;const ta=$('#qk-text');if(ta)ta.value=t;qkRefresh();}return true;}
+function openQuickLink(){const h=location.hash||'';if(!/^#quick(\/|$)/.test(h)||!conn)return false;const t=decodeURIComponent(h.replace(/^#quick\/?/,'').replace(/\+/g,' '));history.replaceState({d:curD},'','#today');curHash='#today';render();A.quickOpen();if(t==='voice'){qk.voice=true;setTimeout(qkListen,300);return true;}if(t){qk.text=t;const ta=$('#qk-text');if(ta)ta.value=t;qkRefresh();}return true;}
 if(conn){outbox.forEach(applyOp);if(route().v==='new')startDraft(route().id);if(!openQuickLink())render();refresh(false);}else render();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 setInterval(()=>{if(outbox.length&&!flushing)flush();},30000);
+let lastTouch=Date.now();['input','pointerdown','keydown'].forEach(t=>document.addEventListener(t,()=>{lastTouch=Date.now();},true));
+setInterval(()=>{if(!conn||document.visibilityState!=='visible'||outbox.length||sync.busy||!$('#modal').hidden)return;if(Date.now()-sync.last<180000||Date.now()-lastTouch<15000)return;refresh(false);},30000);
 window.__mhr={get D(){return D;},get outbox(){return outbox;},A};
 })();
 </script>
