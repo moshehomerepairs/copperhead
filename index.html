@@ -305,7 +305,7 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
 <script>
 (function(){
 "use strict";
-const VERSION='1.11.0';
+const VERSION='1.11.1';
 const errLog=[];const trail=[];
 window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
 window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
@@ -1048,12 +1048,12 @@ function exportSheets(year){
   const M={};const mk=d=>String(d||'').slice(0,7);
   D.jobs.filter(j=>['done','unpaid','paid'].includes(j.status)&&j.date&&inY(j.date)).forEach(j=>{const k=mk(j.date);const t=totals(j);const m=M[k]||(M[k]={jobs:0,h:0,lab:0,mat:0,mup:0,col:0});m.jobs++;m.h+=num(j.hoursWorked);m.lab+=t.labor+t.ru;m.mat+=t.matCost;m.mup+=t.mup;});
   D.payments.filter(p=>p.date&&inY(p.date)).forEach(p=>{const k=mk(p.date);const m=M[k]||(M[k]={jobs:0,h:0,lab:0,mat:0,mup:0,col:0});m.col+=num(p.amount);});
-  const B=Object.keys(M).sort().reverse().map(k=>{const m=M[k];return [parseYmd(k+'-01').toLocaleDateString('en-US',{month:'long',year:'numeric'}),m.jobs,m.h,m.lab,m.mup||'',m.lab+m.mup,m.h?(m.lab+m.mup)/m.h:'',m.mat,m.col];});
+  const B=Object.keys(M).sort().reverse().map(k=>{const m=M[k];return [parseYmd(k+'-01').toLocaleDateString('en-US',{month:'long',year:'numeric'}),m.jobs,m.h,m.lab,m.mup||'',m.lab+m.mup,m.mat,m.col];});
   return [
     {name:'Jobs',cols:[{h:'Date',t:'d',w:12},{h:'Customer',w:24},{h:'Phone',w:15},{h:'Address',w:28},{h:'Job',w:34},{h:'Details',w:28},{h:'Status',w:16},{h:'Hours worked',t:'n',w:12},{h:'Labor',t:'m'},{h:'Materials',t:'m'},{h:'Total',t:'m'},{h:'Paid',t:'m'},{h:'Balance owed',t:'m'},{h:'Price type',w:11},{h:'Private notes',w:30}],rows:J},
     {name:'Customers',cols:[{h:'Name',w:24},{h:'Phone',w:15},{h:'Other phone',w:15},{h:'Email',w:24},{h:'Address',w:28},{h:'How they found you',w:18},{h:'Tags',w:16},{h:'Notes',w:30},{h:'Jobs done',t:'n',w:10},{h:'First job',t:'d',w:12},{h:'Last job',t:'d',w:12},{h:'Labor total',t:'m'},{h:'Total paid',t:'m'},{h:'Owes',t:'m'}],rows:C},
     {name:'Payments',cols:[{h:'Date',t:'d',w:12},{h:'Customer',w:24},{h:'Job',w:34},{h:'Amount',t:'m'},{h:'How',w:10},{h:'Note',w:30}],rows:P},
-    {name:'By month',cols:[{h:'Month',w:16},{h:'Jobs done',t:'n',w:10},{h:'Hours',t:'n',w:9},{h:'Labor',t:'m'},{h:'Materials markup',t:'m',w:16},{h:'Earnings',t:'m'},{h:'Per hour',t:'m',w:10},{h:'Materials cost',t:'m',w:14},{h:'Collected',t:'m'}],rows:B}
+    {name:'By month',cols:[{h:'Month',w:16},{h:'Jobs done',t:'n',w:10},{h:'Hours',t:'n',w:9},{h:'Labor',t:'m'},{h:'Materials markup',t:'m',w:16},{h:'Earnings',t:'m'},{h:'Materials cost',t:'m',w:14},{h:'Collected',t:'m'}],rows:B}
   ];
 }
 
@@ -1527,7 +1527,6 @@ function viewJob(id){
     </div>
     <div class="money">${num(j.hoursWorked)>0?`<span>Time worked</span><span>${fmtHM(j.hoursWorked)}</span>`:''}<span>Labor</span><span>${money(t.labor)}</span>${t.mat?`<span>Materials${t.mup?` <span class="small muted">(${money(t.matCost)}${num(j.matMarkup)?' + '+num(j.matMarkup)+'%':''}${num(j.matMarkupFlat)?' + '+money0(num(j.matMarkupFlat)):''})</span>`:''}</span><span>${money(t.mat)}</span>`:''}${t.ru?`<span>Rounded up</span><span>${money(t.ru)}</span>`:''}<span class="tot">Total</span><span class="tot">${money(t.total)}</span>${paid?`<span>Paid</span><span class="good">${money(paid)}</span>`:''}<span class="bal">Balance</span><span class="bal ${bal>0&&['done','unpaid'].includes(j.status)?'bad':''}">${money(bal)}</span></div>
     ${t.ru||(t.base>0&&Math.abs(t.base-Math.round(t.base))>0.004)?`<div><button class="btn sm" data-act="roundUp" data-id="${j.id}">${t.ru?'Undo round up':'Round up to '+money(Math.ceil(t.base-0.005))}</button></div>`:''}
-    ${j.priceType==='flat'&&num(j.hoursWorked)>0&&t.labor?`<p class="muted small m0">${money0(t.labor/num(j.hoursWorked))} per hour for this job.</p>`:''}
     ${pays.length?`<div class="list">${pays.map(p=>`<div class="item"><span class="l"><b>${money(p.amount)} · ${esc(p.method||'')}</b><span>${esc(fmtDateY(p.date))}${p.note?' · '+esc(p.note):''}</span></span><button class="x" data-act="payDel" data-id="${p.id}" aria-label="Delete payment">×</button></div>`).join('')}</div>`:''}
     ${ui.payFor===j.id?`<div class="card" style="background:var(--sunk)"><div class="grid3"><div class="f"><label class="lab" for="pay-amt">Amount</label><input id="pay-amt" type="number" min="0" step="0.01" inputmode="decimal" value="${bal||''}"></div><div class="f"><label class="lab" for="pay-m">How</label><select id="pay-m">${METHODS.map(m=>`<option>${m}</option>`).join('')}</select></div><div class="f"><label class="lab" for="pay-d">Date</label><input id="pay-d" type="date" value="${today()}"></div></div><div class="row end"><button class="btn ghost" data-act="payCancel">Cancel</button><button class="btn g" data-act="paySave" data-id="${j.id}">Save payment</button></div></div>`
       :`<div class="row"><button class="btn p wide" data-act="invoiceSend" data-id="${j.id}">Send invoice (PDF)</button><button class="btn wide" data-act="msgJob" data-id="${j.id}" data-k="invoice">Text invoice</button></div>
@@ -1623,19 +1622,18 @@ function viewMoney(){
   const months=[...Array(12)].map((_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-11+i,1);const k=`${d.getFullYear()}-${pad(d.getMonth()+1)}`;const x=laborIn(dd=>dd.startsWith(k));return {k,l:d.toLocaleDateString('en-US',{month:'short'}),lab:x.lab,h:x.h,n:x.n,cur:i===11};});
   const max=Math.max(1,...months.map(m=>m.lab),num(S().monthlyGoal));
   const top=D.customers.map(c=>({c,s:custStats(c)})).filter(x=>x.s.earned>0).sort((a,b)=>b.s.earned-a.s.earned).slice(0,8);
-  const rate=x=>x.h?money0(x.lab/x.h)+'/hr':'–';
   return `
   <div class="tiles">
-    <div class="tile"><span>This week</span><b>${money0(W.lab)}</b><span>${W.n} jobs · ${rate(W)}</span></div>
-    <div class="tile"><span>This month</span><b>${money0(M.lab)}</b><span>${M.n} jobs · ${rate(M)}</span></div>
-    <div class="tile"><span>This year</span><b>${money0(Y.lab)}</b><span>${Y.n} jobs · ${rate(Y)}</span></div>
+    <div class="tile"><span>This week</span><b>${money0(W.lab)}</b><span>${W.n} job${W.n===1?'':'s'}</span></div>
+    <div class="tile"><span>This month</span><b>${money0(M.lab)}</b><span>${M.n} job${M.n===1?'':'s'}</span></div>
+    <div class="tile"><span>This year</span><b>${money0(Y.lab)}</b><span>${Y.n} job${Y.n===1?'':'s'}</span></div>
     <div class="tile"><span>Owed to you</span><b class="${owed?'bad':''}">${money0(owed)}</b><span>${unpaid.length} job${unpaid.length===1?'':'s'}</span></div>
   </div>
   <p class="muted small m0">Earnings are labor plus any materials markup (the cost of materials is not counted), by job date. Collected this month, including materials: ${money0(paidIn(d=>d.startsWith(mo)))}.</p>
   <section class="card"><h2 class="sec">Last 12 months (earnings)</h2>
     <div class="bars" role="img" aria-label="Monthly labor earnings">${months.map(m=>`<div class="${m.cur?'cur':''}" style="height:${(m.lab/max*100).toFixed(1)}%" title="${m.l}: ${money0(m.lab)}"></div>`).join('')}</div>
     <div class="blab">${months.map(m=>`<span>${m.l}</span>`).join('')}</div>
-    <details><summary>Show as a table</summary><table class="t"><thead><tr><th>Month</th><th>Jobs</th><th>Hours</th><th>Labor</th><th>Per hour</th></tr></thead><tbody>${months.slice().reverse().map(m=>`<tr><td>${m.l} ${m.k.slice(0,4)}</td><td>${m.n}</td><td>${r2(m.h)}</td><td>${money0(m.lab)}</td><td>${m.h?money0(m.lab/m.h):'–'}</td></tr>`).join('')}</tbody></table></details>
+    <details><summary>Show as a table</summary><table class="t"><thead><tr><th>Month</th><th>Jobs</th><th>Hours</th><th>Earnings</th></tr></thead><tbody>${months.slice().reverse().map(m=>`<tr><td>${m.l} ${m.k.slice(0,4)}</td><td>${m.n}</td><td>${r2(m.h)}</td><td>${money0(m.lab)}</td></tr>`).join('')}</tbody></table></details>
   </section>
   <section class="card"><div class="sec-top"><h2 class="sec">Owed to you</h2><b class="${owed?'bad':''}">${money0(owed)}</b></div>
     ${unpaid.length?`<div class="list">${unpaid.map(j=>jobLine(j,{sub:j.date?fmtDateY(j.date):'',right:`<b class="bad">${money0(jobBal(j))}</b>`})).join('')}</div>`:'<p class="empty">Everyone’s paid up.</p>'}
