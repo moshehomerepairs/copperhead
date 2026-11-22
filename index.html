@@ -194,6 +194,7 @@ details>summary{cursor:pointer;color:var(--muted);font-weight:600}
 .gear svg{width:20px;height:20px}
 .letter{position:sticky;top:calc(57px + env(safe-area-inset-top,0px));z-index:2;background:var(--surface);font:700 .78rem var(--body);color:var(--accent);padding:4px 2px;margin:0 -2px;border-top:0!important;border-bottom:1px solid var(--line)}
 .letter + .item{border-top:0!important}
+.jgrp{text-transform:none;font-size:.85rem}
 #cust-list.has-rail{margin-right:22px}
 .az-rail{position:fixed;z-index:15;right:max(2px,env(safe-area-inset-right,0px));top:calc(57px + env(safe-area-inset-top,0px));bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px));width:24px;display:flex;flex-direction:column;justify-content:center;align-items:center;touch-action:none;user-select:none;-webkit-user-select:none}
 .az-rail span{display:block;width:24px;text-align:center;font:700 .66rem/1.45 var(--body);color:var(--accent);cursor:pointer}
@@ -305,7 +306,7 @@ body.has-acts #toast{bottom:calc(var(--nav) + 86px + env(safe-area-inset-bottom,
 <script>
 (function(){
 "use strict";
-const VERSION='1.11.1';
+const VERSION='1.12.0';
 const errLog=[];const trail=[];
 window.addEventListener('error',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String(e.message||e.error||'error').slice(0,200)+(e.lineno?' (line '+e.lineno+')':''));if(errLog.length>10)errLog.shift();});
 window.addEventListener('unhandledrejection',e=>{errLog.push(new Date().toISOString().slice(11,19)+' '+String((e.reason&&e.reason.message)||e.reason||'promise error').slice(0,200));if(errLog.length>10)errLog.shift();});
@@ -386,7 +387,7 @@ let outbox=lsGet('mhr-outbox',[]);
 let sync={busy:false,err:'',loaded:false,last:0};
 const photoCache={};const photoWant=new Set();const photoFail=new Set();let photoBusy=0;
 let draft=null; // new job form
-const ui={listTab:'todo',pricing:'',jobView:'list',calDay:'',jobFilter:'open',jobSearch:'',custSearch:'',custSort:'az',confirm:'',payFor:'',showPhotosFor:'',mergeFor:'',doneOpen:false};
+const ui={listTab:'todo',pricing:'',jobView:'list',calDay:'',jobFilter:'open',jobSort:lsGet('mhr-jobsort','date'),jobSearch:'',custSearch:'',custSort:'az',confirm:'',payFor:'',showPhotosFor:'',mergeFor:'',doneOpen:false};
 
 function normStatus(v){const t=String(v||'').trim().toLowerCase();if(!t)return 'new';if(SL[t])return t;
   const m=[[/follow/,'followup'],[/wait|repl/,'waiting'],[/sched|book|slot/,'scheduled'],[/cancel/,'cancelled'],[/unpaid|invoic|owe|didn/,'unpaid'],[/paid/,'paid'],[/done|finish|complete/,'done'],[/new|request|lead|list/,'new']];
@@ -1365,15 +1366,36 @@ const JOB_FILTERS=[['open','Open',j=>['new','waiting','followup','scheduled'].in
 function filteredJobs(){
   const f=(JOB_FILTERS.find(x=>x[0]===ui.jobFilter)||JOB_FILTERS[0])[2];const q=ui.jobSearch.trim().toLowerCase();const qd=digits(q);
   return D.jobs.filter(f).filter(j=>{if(!q)return true;const c=getCust(j.customerId)||{};return [j.title,j.description,c.name,c.phone,c.address].join(' ').toLowerCase().includes(q)||(qd.length>=3&&!/[a-z]/.test(q)&&(digits(c.phone).includes(qd)||digits(c.phone2).includes(qd)));})
-    .sort((a,b)=>{if(ui.jobFilter==='scheduled'||ui.jobFilter==='open'){const ad=a.date||'9999',bd=b.date||'9999';return ad.localeCompare(bd)||(a.time||'').localeCompare(b.time||'');}return (b.date||b.createdAt||'').localeCompare(a.date||a.createdAt||'');});
+    .sort(jobSorter());
 }
-function jobRows(){const l=filteredJobs();const shown=l.slice(0,150);return l.length?`<div class="list">${shown.map(j=>jobLine(j)).join('')}</div>${l.length>150?`<p class="muted small m0">Showing 150 of ${l.length}. Search to find older jobs.</p>`:''}`:`<p class="empty">${D.jobs.length?'No jobs here.':'No jobs yet. Tap “+ Job” to add the first one.'}</p>`;}
+/* Jobs sort: date (default), group, oldest, area */
+const JOB_SORTS=[['date','By date'],['group','By group'],['oldest','Oldest first'],['area','By street']];
+const JOB_GROUPS=[['sched','On the schedule'],['followup','Need to follow up'],['waiting','Waiting on reply'],['new','New requests'],['slotted','Slotted in, no date yet'],['done','Done'],['unpaid','Invoiced, unpaid'],['paid','Paid'],['cancelled','Cancelled']];
+const jobGroup=j=>j.status==='scheduled'?(j.date?'sched':'slotted'):j.status;
+const byDate=(a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||(a.time||'').localeCompare(b.time||'');
+const byAdded=(a,b)=>String(a.createdAt||'').localeCompare(String(b.createdAt||''));
+function streetOf(j){const a=String((getCust(j.customerId)||{}).address||'').split(',')[0].trim();if(!a)return {k:'',n:0,l:''};
+  const m=a.match(/^(\d+)\s+(.*)$/);let st=(m?m[2]:a).replace(/^(n|s|e|w|north|south|east|west)\.?\s+/i,'').trim();
+  const l=st.replace(/\s+(ave|avenue|st|street|rd|road|blvd|dr|drive|ct|court|pl|place|ln|lane|ter|terrace|pkwy|way)\.?$/i,'').trim();
+  return {k:l.toLowerCase(),n:m?num(m[1]):0,l:l.replace(/\b\w/g,c=>c.toUpperCase())};}
+function jobSorter(){const s=ui.jobSort;
+  if(s==='oldest')return byAdded;
+  if(s==='group'){const gi=j=>JOB_GROUPS.findIndex(g=>g[0]===jobGroup(j));return (a,b)=>gi(a)-gi(b)||(jobGroup(a)==='sched'?byDate(a,b):byAdded(a,b));}
+  if(s==='area')return (a,b)=>{const x=streetOf(a),y=streetOf(b);return (x.k?0:1)-(y.k?0:1)||x.k.localeCompare(y.k)||x.n-y.n||byDate(a,b);};
+  if(ui.jobFilter==='scheduled'||ui.jobFilter==='open')return byDate;
+  return (a,b)=>(b.date||b.createdAt||'').localeCompare(a.date||a.createdAt||'');}
+function jobHead(j){if(ui.jobSort==='group'){const g=jobGroup(j);return {k:g,l:(JOB_GROUPS.find(x=>x[0]===g)||[0,g])[1]};}
+  if(ui.jobSort==='area'){const s=streetOf(j);return {k:s.k||'~',l:s.l||'No address'};}return null;}
+function jobRows(){const l=filteredJobs();const shown=l.slice(0,150);
+  const cnt={};if(ui.jobSort==='group'||ui.jobSort==='area')l.forEach(j=>{const h=jobHead(j);cnt[h.k]=(cnt[h.k]||0)+1;});let last=null;
+  return l.length?`<div class="list">${shown.map(j=>{const h=jobHead(j);let t='';if(h&&h.k!==last){last=h.k;t=`<div class="letter jgrp">${esc(h.l)} <span class="muted">· ${cnt[h.k]}</span></div>`;}return t+jobLine(j);}).join('')}</div>${l.length>150?`<p class="muted small m0">Showing 150 of ${l.length}. Search to find older jobs.</p>`:''}`:`<p class="empty">${D.jobs.length?'No jobs here.':'No jobs yet. Tap “+ Job” to add the first one.'}</p>`;}
 function viewJobs(){
   const seg=`<div class="seg" role="group" aria-label="View">${[['list','List'],['week','Week'],['month','Month']].map(([k,l])=>`<button data-act="jobView" data-k="${k}" aria-pressed="${ui.jobView===k}">${l}</button>`).join('')}</div>`;
   if(ui.jobView==='week')return seg+viewWeek();
   if(ui.jobView==='month')return seg+viewMonth();
   return seg+`<div class="chips" role="group" aria-label="Filter">${JOB_FILTERS.map(([k,l,f])=>`<button class="chip" data-act="jobFilter" data-k="${k}" aria-pressed="${ui.jobFilter===k}">${l} <span class="n">${D.jobs.filter(f).length}</span></button>`).join('')}</div>
-  <input type="search" id="job-search" data-inp="jobSearch" placeholder="Search job, customer, phone, address" value="${esc(ui.jobSearch)}" aria-label="Search jobs">
+  <div class="row" style="flex-wrap:nowrap"><input type="search" id="job-search" data-inp="jobSearch" placeholder="Search job, customer, phone, address" value="${esc(ui.jobSearch)}" aria-label="Search jobs">
+    <select id="job-sort" data-chg="jobSort" style="width:auto;flex-shrink:0" aria-label="Sort jobs">${JOB_SORTS.map(([k,l])=>`<option value="${k}" ${ui.jobSort===k?'selected':''}>${l}</option>`).join('')}</select></div>
   <section class="card" id="job-list">${jobRows()}</section>`;
 }
 
@@ -1947,6 +1969,7 @@ document.addEventListener('change',e=>{
   else if(k==='setBool'){edPut('set',{[el.dataset.k]:el.checked});render();}
   else if(k==='set'){const nk=['serviceFee','includedHours','hourlyRate','monthlyGoal','markupPct','markupFlat'].includes(el.dataset.k);edPut('set',{[el.dataset.k]:nk?num(v):v});render();}
   else if(k==='custSort'){ui.custSort=el.value;$('#cust-list').innerHTML=custRows();}
+  else if(k==='jobSort'){ui.jobSort=el.value;lsSet('mhr-jobsort',ui.jobSort);const jl=$('#job-list');if(jl)jl.innerHTML=jobRows();}
 });
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&e.target.id==='td-new'){e.preventDefault();A.todoAdd();}
